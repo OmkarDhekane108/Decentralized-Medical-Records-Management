@@ -1,5 +1,2 @@
-<<<<<<< HEAD
-// ---- tumcha (prasad branch cha) Authentication code ----
-=======
-// ---- Omkar cha (main branch cha) Authentication code ----
->>>>>>> main
+git add Authentication.java
+git commit -m "Merged remote changes into local branch"
