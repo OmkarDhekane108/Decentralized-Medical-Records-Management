@@ -1,3 +1,5 @@
-git add .
-   git commit -m "resolved conflict with main"
-   git push origin feature/prasad-database
+<<<<<<< HEAD
+// tumcha local code
+=======
+// remote (origin/main) cha code
+>>>>>>> ...
