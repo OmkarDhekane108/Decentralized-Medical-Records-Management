@@ -30,3 +30,16 @@ Basic unit tests are included for the Authentication and Blockchain modules.
 | Prasad | Database + Entities + IPFS |
 | Naresh | Frontend/UI |
 | Rohan | Testing + Documentation |
+
+## How to Run
+
+### Blockchain Module
+javac Blockchain.java
+java Blockchain
+
+### Authentication Module (with tests)
+javac AuthenticationTest.java Authentication.java
+java AuthenticationTest
+
+### Frontend
+Open login.html or dashboard.html in any web browser
