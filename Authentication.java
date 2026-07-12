@@ -1,3 +1,3 @@
-public static void logout() {
-    System.out.println("User Logout");
-}
+git add .
+   git commit -m "resolved conflict with main"
+   git push origin feature/prasad-database
