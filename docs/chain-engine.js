@@ -65,16 +65,35 @@ async function seedChainIfEmpty() {
   return chain;
 }
 
+function blockDataString(b) {
+  if (b.type === "genesis") return b.diagnosis;
+  if (b.type === "referral") return `${b.patientName}|${b.doctorName}|REFERRAL|${b.hospitalName}|${b.reason}|${b.date}`;
+  return `${b.patientName}|${b.doctorName}|${b.diagnosis}|${b.date}`;
+}
+
 async function addRecordToChain({ patientId, patientName, doctorName, diagnosis, date }) {
   const chain = loadChainRaw() || [];
   const prev = chain[chain.length - 1];
   const ts = Date.now();
-  const dataStr = `${patientName}|${doctorName}|${diagnosis}|${date}`;
-  const hash = await computeBlockHash(prev.hash, ts, dataStr);
   const block = {
     id: "blk-" + chain.length, patientId, patientName, doctorName, diagnosis, date,
-    timestamp: ts, prevHash: prev.hash, hash, type: "record",
+    timestamp: ts, prevHash: prev.hash, type: "record",
   };
+  block.hash = await computeBlockHash(prev.hash, ts, blockDataString(block));
+  chain.push(block);
+  saveChain(chain);
+  return block;
+}
+
+async function addReferralToChain({ patientId, patientName, doctorName, hospitalId, hospitalName, reason, date }) {
+  const chain = loadChainRaw() || [];
+  const prev = chain[chain.length - 1];
+  const ts = Date.now();
+  const block = {
+    id: "blk-" + chain.length, patientId, patientName, doctorName, hospitalId, hospitalName, reason, date,
+    status: "Pending", timestamp: ts, prevHash: prev.hash, type: "referral",
+  };
+  block.hash = await computeBlockHash(prev.hash, ts, blockDataString(block));
   chain.push(block);
   saveChain(chain);
   return block;
@@ -85,23 +104,24 @@ async function verifyChain() {
   const chain = loadChainRaw() || [];
   for (let i = 0; i < chain.length; i++) {
     const b = chain[i];
-    const dataStr = b.type === "genesis"
-      ? b.diagnosis
-      : `${b.patientName}|${b.doctorName}|${b.diagnosis}|${b.date}`;
-    const recomputed = await computeBlockHash(b.prevHash, b.timestamp, dataStr);
+    const recomputed = await computeBlockHash(b.prevHash, b.timestamp, blockDataString(b));
     if (recomputed !== b.hash) return { valid: false, brokenAt: i, reason: "hash-mismatch" };
     if (i > 0 && b.prevHash !== chain[i - 1].hash) return { valid: false, brokenAt: i, reason: "broken-link" };
   }
   return { valid: true, brokenAt: null };
 }
 
-// DEV-ONLY demo helper: tampers with a record's diagnosis to show detection working
+// DEV-ONLY demo helper: tampers with a block's content to show detection working
 function tamperRecord(index) {
   const chain = loadChainRaw() || [];
-  if (chain[index]) {
-    chain[index].diagnosis = chain[index].diagnosis + " (edited)";
-    saveChain(chain);
+  const b = chain[index];
+  if (!b) return;
+  if (b.type === "referral") {
+    b.reason = (b.reason || "") + " (edited)";
+  } else {
+    b.diagnosis = (b.diagnosis || "") + " (edited)";
   }
+  saveChain(chain);
 }
 
 function resetChain() {

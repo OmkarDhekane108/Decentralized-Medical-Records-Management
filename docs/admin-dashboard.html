@@ -25,7 +25,7 @@
 
     <div class="sidebar-footer">
       <span class="role-pill">Admin</span>
-      <a class="nav-item" href="login.html"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
+      <a class="nav-item" href="#" onclick="logout(); return false;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
     </div>
   </aside>
 
@@ -95,6 +95,21 @@
       </table>
     </div>
 
+    <!-- Hospital Management -->
+    <div class="card">
+      <div class="card-head">
+        <div><h3>Hospital Management</h3><div class="hint">Specialist hospitals available for patient referrals</div></div>
+        <button class="btn btn-primary" id="addHospitalBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+          Add Hospital
+        </button>
+      </div>
+      <table>
+        <thead><tr><th>Hospital</th><th>Specialization</th><th>Location (Lat, Lng)</th><th>Available Slots</th><th></th></tr></thead>
+        <tbody id="hospitalBody"></tbody>
+      </table>
+    </div>
+
     <!-- User management -->
     <div class="card">
       <div class="card-head"><div><h3>User Management</h3><div class="hint">All registered accounts</div></div></div>
@@ -111,9 +126,33 @@
   </main>
 </div>
 
+<!-- Add Hospital Modal -->
+<div class="modal-overlay" id="hospitalModal">
+  <div class="modal">
+    <h3>Add Hospital</h3>
+    <div class="modal-sub">This hospital will become available for doctor referrals.</div>
+    <div class="field"><label>Hospital Name</label><input id="hName" placeholder="e.g. Apex Multispecialty Hospital"></div>
+    <div class="field"><label>Specialization</label><input id="hSpecialization" placeholder="e.g. Nephrology"></div>
+    <div class="field" style="display:flex; gap:10px;">
+      <div style="flex:1;"><label>Latitude</label><input id="hLat" placeholder="e.g. 18.52"></div>
+      <div style="flex:1;"><label>Longitude</label><input id="hLng" placeholder="e.g. 73.85"></div>
+    </div>
+    <div class="field"><label>Available Appointment Slots</label><input id="hSlots" type="number" min="0" placeholder="e.g. 4"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="cancelHospital">Cancel</button>
+      <button class="btn btn-primary" id="confirmHospital">Add Hospital</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 
+<script src="auth-guard.js"></script>
+<script src="hospital-engine.js"></script>
 <script src="chain-engine.js"></script>
+<script>
+const session = requireRole("Admin");
+</script>
 <script>
 function fmtDate(d) {
   if (d === "—") return d;
@@ -128,20 +167,73 @@ async function renderChainTable(brokenAt) {
   body.innerHTML = "";
   chain.forEach((b, i) => {
     const isBroken = brokenAt === i;
+    const label = b.type === "referral" ? `Referred to ${b.hospitalName}` : b.diagnosis;
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${i}</td>
       <td>${b.patientName}</td>
-      <td>${b.diagnosis}</td>
+      <td>${label}</td>
       <td style="font-family:'Courier New',monospace; font-size:11px; color:var(--muted);">${b.prevHash === "0" ? "0 (genesis)" : shortHash(b.prevHash)}</td>
       <td><span class="hash-chip ${isBroken ? 'broken' : ''}"><span class="dot">${isBroken ? "!" : "✓"}</span>${shortHash(b.hash)}</span></td>`;
     body.appendChild(tr);
   });
 }
 
+function renderHospitalTable() {
+  const list = seedHospitalsIfEmpty();
+  const body = document.getElementById("hospitalBody");
+  body.innerHTML = "";
+  list.forEach(h => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${h.name}</b></td>
+      <td><span class="role-badge doctor">${h.specialization}</span></td>
+      <td style="font-family:'Courier New',monospace; font-size:11.5px; color:var(--muted);">${h.lat.toFixed(4)}, ${h.lng.toFixed(4)}</td>
+      <td>${h.slots}</td>
+      <td><button class="btn btn-outline" style="padding:5px 10px; font-size:11px;" onclick="handleRemoveHospital('${h.id}')">Remove</button></td>`;
+    body.appendChild(tr);
+  });
+}
+
+function handleRemoveHospital(id) {
+  removeHospital(id);
+  renderHospitalTable();
+}
+
+const hModal = document.getElementById("hospitalModal");
+document.getElementById("addHospitalBtn").onclick = () => { hModal.classList.add("open"); };
+document.getElementById("cancelHospital").onclick = () => { hModal.classList.remove("open"); };
+
+document.getElementById("confirmHospital").onclick = () => {
+  const name = document.getElementById("hName").value.trim();
+  const specialization = document.getElementById("hSpecialization").value.trim();
+  const lat = document.getElementById("hLat").value.trim();
+  const lng = document.getElementById("hLng").value.trim();
+  const slots = document.getElementById("hSlots").value.trim();
+
+  if (!name || !specialization || !lat || !lng || !slots) {
+    document.getElementById("toastMsg").textContent = "Please fill in all hospital details";
+    const toast = document.getElementById("toast");
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2400);
+    return;
+  }
+
+  addHospital({ name, lat, lng, specialization, slots });
+  hModal.classList.remove("open");
+  ["hName", "hSpecialization", "hLat", "hLng", "hSlots"].forEach(id => document.getElementById(id).value = "");
+
+  document.getElementById("toastMsg").textContent = "Hospital added successfully";
+  const toast = document.getElementById("toast");
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 2400);
+  renderHospitalTable();
+};
+
 async function init() {
   await seedChainIfEmpty();
   await renderChainTable(null);
+  renderHospitalTable();
 }
 
 document.getElementById("verifyBtn").onclick = async () => {
