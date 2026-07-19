@@ -95,6 +95,15 @@
         <p>No records yet for this patient. Upload the first one.</p>
       </div>
     </div>
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <h3>Referral Status</h3>
+          <div class="hint">If your doctor refers you to a specialist hospital, it appears here</div>
+        </div>
+      </div>
+      <div id="referralContent"></div>
+    </div>
   </main>
 </div>
 
@@ -160,6 +169,27 @@ async function render() {
 
   document.getElementById("statTotal").textContent = records.length;
   document.getElementById("statLast").textContent = records.length ? fmtDate(records[records.length - 1].date) : "—";
+
+  // Referral status
+  const referrals = chain.filter(b => b.type === "referral" && b.patientId === currentPatient);
+  const refContent = document.getElementById("referralContent");
+  if (!referrals.length) {
+    refContent.innerHTML = `<div class="empty-state"><p>No active referrals. You'll see it here if a doctor refers you to a specialist hospital.</p></div>`;
+  } else {
+    const r = referrals[referrals.length - 1];
+    refContent.innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;">
+        <div>
+          <div style="font-size:15px; font-weight:700; color:var(--ink); margin-bottom:4px;">${r.hospitalName}</div>
+          <div style="font-size:12.5px; color:var(--muted);">Referred by ${r.doctorName} on ${fmtDate(r.date)}</div>
+          <div style="font-size:12.5px; color:var(--slate); margin-top:6px;">"${r.reason}"</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
+          <span class="status-pill review">${r.status}</span>
+          <span class="hash-chip"><span class="dot">✓</span>${shortHash(r.hash)}</span>
+        </div>
+      </div>`;
+  }
 }
 
 document.getElementById("patientSwitch").addEventListener("change", (e) => {

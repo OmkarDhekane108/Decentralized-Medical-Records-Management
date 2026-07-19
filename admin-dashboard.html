@@ -163,11 +163,12 @@ async function renderChainTable(brokenAt) {
   body.innerHTML = "";
   chain.forEach((b, i) => {
     const isBroken = brokenAt === i;
+    const label = b.type === "referral" ? `Referred to ${b.hospitalName}` : b.diagnosis;
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${i}</td>
       <td>${b.patientName}</td>
-      <td>${b.diagnosis}</td>
+      <td>${label}</td>
       <td style="font-family:'Courier New',monospace; font-size:11px; color:var(--muted);">${b.prevHash === "0" ? "0 (genesis)" : shortHash(b.prevHash)}</td>
       <td><span class="hash-chip ${isBroken ? 'broken' : ''}"><span class="dot">${isBroken ? "!" : "✓"}</span>${shortHash(b.hash)}</span></td>`;
     body.appendChild(tr);
