@@ -14,3 +14,4 @@
 
     public String getReferralStatus() { return referralStatus; }
     public String getReferredToHospitalId() { return referredToHospitalId; }
+    
