@@ -31,8 +31,15 @@
         // Demo hardcoded credentials (matches Authentication.java)
         const USERS = {
             "patient1": { password: "patient123", role: "Patient" },
+            "patient2": { password: "patient123", role: "Patient" },
             "doctor1":  { password: "doctor123",  role: "Doctor" },
             "admin1":   { password: "admin123",   role: "Admin" }
+        };
+
+        const DASHBOARD_BY_ROLE = {
+            "Patient": "patient-dashboard.html",
+            "Doctor": "doctor-dashboard.html",
+            "Admin": "admin-dashboard.html"
         };
 
         document.getElementById("loginForm").addEventListener("submit", function (e) {
@@ -46,14 +53,7 @@
             if (user && user.password === password && user.role === role) {
                 localStorage.setItem("loggedInUser", username);
                 localStorage.setItem("loggedInRole", role);
-
-                if (role === "Patient") {
-    window.location.href = "patient-dashboard.html";
-} else if (role === "Doctor") {
-    window.location.href = "doctor-dashboard.html";
-} else if (role === "Admin") {
-    window.location.href = "admin-dashboard.html";
-}
+                window.location.href = DASHBOARD_BY_ROLE[role];
             } else {
                 errorMsg.textContent = "Invalid username, password, or role.";
                 errorMsg.style.display = "block";
