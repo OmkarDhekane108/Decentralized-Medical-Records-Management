@@ -25,7 +25,7 @@
 
     <div class="sidebar-footer">
       <span class="role-pill">Doctor</span>
-      <a class="nav-item" href="login.html"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
+      <a class="nav-item" href="#" onclick="logout(); return false;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
     </div>
   </aside>
 
@@ -33,7 +33,7 @@
   <main class="main">
     <div class="topbar">
       <div>
-        <div class="title">Good morning, Dr. Sharma</div>
+        <div class="title" id="greetTitle">Good morning</div>
         <div class="subtitle">Here's what's happening with your patients today</div>
       </div>
       <div class="topbar-right" style="display:flex; align-items:center;">
@@ -42,8 +42,8 @@
           <input placeholder="Search patients...">
         </div>
         <div class="profile-chip">
-          <div class="avatar">DS</div>
-          <div class="who"><b>Dr. Sharma</b>Physician</div>
+          <div class="avatar" id="doctorAvatar">DR</div>
+          <div class="who"><b id="doctorNameLabel">Doctor</b>Physician</div>
         </div>
       </div>
     </div>
@@ -52,75 +52,72 @@
       <div class="stat-card">
         <div class="label">Total Patients</div>
         <div class="value" id="statPatients">—</div>
-        <div class="delta neutral">Under your care</div>
+        <div class="delta neutral">Registered in system</div>
       </div>
       <div class="stat-card">
-        <div class="label">Records Added Today</div>
-        <div class="value" id="statToday">—</div>
-        <div class="delta">Chain-verified on save</div>
+        <div class="label">Your Records</div>
+        <div class="value" id="statRecords">—</div>
+        <div class="delta">From live database</div>
       </div>
       <div class="stat-card">
-        <div class="label">Chain Status</div>
-        <div class="value" style="font-size:20px; color:var(--mint);">Verified</div>
-        <div class="delta">SHA-256 hash-linked</div>
+        <div class="label">Backend</div>
+        <div class="value" id="statBackend" style="font-size:16px; color:var(--mint);">Connected</div>
+        <div class="delta neutral">localhost:8081</div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-head">
         <div>
-          <h3>Patient List</h3>
-          <div class="hint">Add a diagnosis to append a new hash-linked record</div>
+          <h3>Your Records</h3>
+          <div class="hint">Records where you're the attending doctor — click Edit to update a diagnosis</div>
         </div>
-        <button class="btn btn-primary" id="addBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
-          Add Diagnosis
-        </button>
       </div>
       <table>
-        <thead><tr><th>Patient</th><th>Last Diagnosis</th><th>Last Visit</th><th>Chain Verification</th><th></th></tr></thead>
+        <thead><tr><th>Patient</th><th>Date</th><th>Diagnosis</th><th>Chain Verification</th><th></th></tr></thead>
+        <tbody id="recordsBody"></tbody>
+      </table>
+      <div class="empty-state" id="recordsEmpty" style="display:none;">
+        <p>No records yet. Patients can upload records naming you as their doctor.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div><h3>All Patients</h3><div class="hint">Everyone registered as a patient in the system</div></div>
+      </div>
+      <table>
+        <thead><tr><th>Patient</th><th>Username</th><th>Status</th></tr></thead>
         <tbody id="patientBody"></tbody>
       </table>
     </div>
 
     <div class="card">
       <div class="card-head">
-        <div><h3>Recent Referrals</h3><div class="hint">Patients you've referred to specialist hospitals</div></div>
+        <div><h3>Hospital Referrals <span style="font-weight:400; color:var(--muted); font-size:11px;">(local demo — not yet connected to backend)</span></h3><div class="hint">Refer a patient to a specialist hospital</div></div>
+        <button class="btn btn-amber" id="quickReferBtn">Refer a Patient →</button>
       </div>
       <table>
-        <thead><tr><th>Patient</th><th>Referred To</th><th>Reason</th><th>Status</th><th>Chain Verification</th></tr></thead>
+        <thead><tr><th>Patient</th><th>Referred To</th><th>Reason</th><th>Status</th></tr></thead>
         <tbody id="referralBody"></tbody>
       </table>
       <div class="empty-state" id="referralEmpty" style="display:none;">
-        <p>No referrals yet. Use "Refer →" on a patient to send them to a specialist hospital.</p>
+        <p>No referrals yet.</p>
       </div>
-    </div>
-
-    <div class="card">
-      <div class="card-head">
-        <div><h3>Recent Chain Activity</h3><div class="hint">Latest blocks appended across all patients</div></div>
-      </div>
-      <table>
-        <thead><tr><th>Patient</th><th>Diagnosis</th><th>Date</th><th>Block Hash</th></tr></thead>
-        <tbody id="activityBody"></tbody>
-      </table>
     </div>
   </main>
 </div>
 
-<!-- Add Diagnosis Modal -->
-<div class="modal-overlay" id="addModal">
+<!-- Edit Diagnosis Modal -->
+<div class="modal-overlay" id="editModal">
   <div class="modal">
-    <h3>Add Diagnosis</h3>
-    <div class="modal-sub">A new block will be hashed and linked to this patient's chain.</div>
-    <div class="field"><label>Patient</label>
-      <select id="fPatient"><option value="ravi">Ravi Kumar</option><option value="anita">Anita Joshi</option></select>
-    </div>
-    <div class="field"><label>Diagnosis / Notes</label><input id="fDiagnosis" placeholder="e.g. Prescribed antibiotics"></div>
-    <div class="field"><label>Date</label><input id="fDate" type="date"></div>
+    <h3>Update Diagnosis</h3>
+    <div class="modal-sub">This updates the record and re-anchors it on the chain.</div>
+    <div class="field"><label>Patient</label><input id="ePatient" disabled></div>
+    <div class="field"><label>Diagnosis / Notes</label><input id="eDiagnosis"></div>
     <div class="modal-actions">
-      <button class="btn btn-outline" id="cancelAdd">Cancel</button>
-      <button class="btn btn-primary" id="confirmAdd">Add to Chain</button>
+      <button class="btn btn-outline" id="cancelEdit">Cancel</button>
+      <button class="btn btn-primary" id="confirmEdit">Save Changes</button>
     </div>
   </div>
 </div>
@@ -129,13 +126,14 @@
 <div class="modal-overlay" id="referModal">
   <div class="modal">
     <h3>Refer to Hospital</h3>
-    <div class="modal-sub">Patient's medical history stays chain-verified when shared for referral.</div>
-    <div class="field"><label>Patient</label><input id="rPatientName" disabled></div>
+    <div class="modal-sub">Local demo feature — hospital directory isn't wired to the backend yet.</div>
+    <div class="field"><label>Patient</label>
+      <select id="rPatient"></select>
+    </div>
     <div class="field"><label>Refer To Hospital</label>
       <select id="rHospital"></select>
     </div>
     <div class="field"><label>Reason for Referral</label><input id="rReason" placeholder="e.g. Suspected cardiac issue, needs specialist"></div>
-    <div class="field"><label>Date</label><input id="rDate" type="date"></div>
     <div class="modal-actions">
       <button class="btn btn-outline" id="cancelRefer">Cancel</button>
       <button class="btn btn-amber" id="confirmRefer">Send Referral</button>
@@ -143,142 +141,155 @@
   </div>
 </div>
 
-<div class="toast" id="toast">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2FAE85" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-  <span id="toastMsg">Diagnosis added and hash-verified</span>
-</div>
+<div class="toast" id="toast"><span id="toastMsg">Saved</span></div>
 
+<script src="auth-guard.js"></script>
+<script src="api-client.js"></script>
 <script src="hospital-engine.js"></script>
-<script src="chain-engine.js"></script>
 <script>
-const PATIENTS = {
-  ravi: { name: "Ravi Kumar", initials: "RK" },
-  anita: { name: "Anita Joshi", initials: "AJ" },
-};
-const DOCTOR_NAME = "Dr. Sharma";
-
+const session = requireRole("DOCTOR");
+</script>
+<script>
 function fmtDate(d) {
-  if (d === "—") return d;
-  return new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  if (!d) return "—";
+  const date = Array.isArray(d) ? new Date(d[0], d[1] - 1, d[2]) : new Date(d);
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+function shortHash(h) {
+  if (!h) return "Not yet chained";
+  return h.slice(0, 8) + "…" + h.slice(-6);
+}
+function initialsOf(name) {
+  if (!name) return "?";
+  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
+let patients = [];
+
 async function render() {
-  const chain = await seedChainIfEmpty();
-  const records = chain.filter(b => b.type === "record");
-  const referrals = chain.filter(b => b.type === "referral");
+  document.getElementById("greetTitle").textContent = "Good morning, " + (session.fullName || session.username);
+  document.getElementById("doctorNameLabel").textContent = session.fullName || session.username;
+  document.getElementById("doctorAvatar").textContent = initialsOf(session.fullName || session.username);
 
-  document.getElementById("statPatients").textContent = Object.keys(PATIENTS).length;
-  const todayStr = new Date().toISOString().slice(0, 10);
-  document.getElementById("statToday").textContent = records.filter(r => r.date === todayStr).length;
+  let records = [];
+  try {
+    [records, patients] = await Promise.all([
+      apiRequest("/api/doctor/records"),
+      apiRequest("/api/doctor/patients"),
+    ]);
+  } catch (err) {
+    document.getElementById("statBackend").textContent = "Offline";
+    document.getElementById("statBackend").style.color = "var(--coral)";
+    return;
+  }
 
-  // Patient list — latest record per patient
-  const pBody = document.getElementById("patientBody");
-  pBody.innerHTML = "";
-  Object.entries(PATIENTS).forEach(([id, p]) => {
-    const patientRecords = records.filter(r => r.patientId === id);
-    const last = patientRecords[patientRecords.length - 1];
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><div class="name-cell"><div class="mini-avatar">${p.initials}</div>${p.name}</div></td>
-      <td>${last ? last.diagnosis : "No records yet"}</td>
-      <td>${last ? fmtDate(last.date) : "—"}</td>
-      <td>${last ? `<span class="hash-chip"><span class="dot">✓</span>${shortHash(last.hash)}</span>` : "—"}</td>
-      <td><button class="btn btn-ghost" style="padding:6px 12px; font-size:11.5px;" onclick="openReferModal('${id}')">Refer →</button></td>`;
-    pBody.appendChild(tr);
-  });
+  document.getElementById("statPatients").textContent = patients.length;
+  document.getElementById("statRecords").textContent = records.length;
 
-  // Recent activity — last 6 records, newest first
-  const aBody = document.getElementById("activityBody");
-  aBody.innerHTML = "";
-  records.slice(-6).reverse().forEach(r => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><div class="name-cell"><div class="mini-avatar">${PATIENTS[r.patientId]?.initials || "?"}</div>${r.patientName}</div></td>
-      <td>${r.diagnosis}</td>
-      <td>${fmtDate(r.date)}</td>
-      <td><span class="hash-chip"><span class="dot">✓</span>${shortHash(r.hash)}</span></td>`;
-    aBody.appendChild(tr);
-  });
-
-  // Referrals
-  const rBody = document.getElementById("referralBody");
-  const rEmpty = document.getElementById("referralEmpty");
+  // Records table
+  const rBody = document.getElementById("recordsBody");
+  const rEmpty = document.getElementById("recordsEmpty");
   rBody.innerHTML = "";
-  if (!referrals.length) {
+  if (!records.length) {
     rEmpty.style.display = "block";
   } else {
     rEmpty.style.display = "none";
-    referrals.slice().reverse().forEach(r => {
+    records.slice().reverse().forEach(r => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td><div class="name-cell"><div class="mini-avatar">${PATIENTS[r.patientId]?.initials || "?"}</div>${r.patientName}</div></td>
-        <td>${r.hospitalName}</td>
-        <td>${r.reason}</td>
-        <td><span class="status-pill review">${r.status}</span></td>
-        <td><span class="hash-chip"><span class="dot">✓</span>${shortHash(r.hash)}</span></td>`;
+        <td><div class="name-cell"><div class="mini-avatar">${initialsOf(r.patientUsername)}</div>${r.patientUsername}</div></td>
+        <td>${fmtDate(r.date)}</td>
+        <td>${r.diagnosis}</td>
+        <td><span class="hash-chip"><span class="dot">✓</span>${shortHash(r.blockHash)}</span></td>
+        <td><button class="btn btn-ghost" style="padding:6px 12px; font-size:11.5px;" onclick='openEditModal(${JSON.stringify(r)})'>Edit</button></td>`;
       rBody.appendChild(tr);
     });
   }
+
+  // Patients table
+  const pBody = document.getElementById("patientBody");
+  pBody.innerHTML = "";
+  patients.forEach(p => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><div class="name-cell"><div class="mini-avatar">${initialsOf(p.fullName)}</div>${p.fullName}</div></td>
+      <td>${p.username}</td>
+      <td><span class="status-pill ${p.active ? 'normal' : 'critical'}">${p.active ? 'Active' : 'Inactive'}</span></td>`;
+    pBody.appendChild(tr);
+  });
+
+  renderReferrals();
 }
 
-function openReferModal(patientId) {
-  const p = PATIENTS[patientId];
-  document.getElementById("rPatientName").value = p.name;
-  document.getElementById("referModal").dataset.patientId = patientId;
-
-  const hospitals = seedHospitalsIfEmpty();
-  const sel = document.getElementById("rHospital");
-  sel.innerHTML = hospitals.map(h => `<option value="${h.id}">${h.name} — ${h.specialization}</option>`).join("");
-
-  document.getElementById("referModal").classList.add("open");
+function openEditModal(record) {
+  document.getElementById("editModal").dataset.id = record.id;
+  document.getElementById("ePatient").value = record.patientUsername;
+  document.getElementById("eDiagnosis").value = record.diagnosis;
+  document.getElementById("editModal").classList.add("open");
 }
+document.getElementById("cancelEdit").onclick = () => document.getElementById("editModal").classList.remove("open");
+document.getElementById("confirmEdit").onclick = async () => {
+  const id = document.getElementById("editModal").dataset.id;
+  const diagnosis = document.getElementById("eDiagnosis").value.trim();
+  try {
+    await apiRequest(`/api/doctor/records/${id}`, { method: "PUT", body: { diagnosis } });
+    document.getElementById("editModal").classList.remove("open");
+    document.getElementById("toastMsg").textContent = "Diagnosis updated and re-chained";
+    const toast = document.getElementById("toast");
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2600);
+    render();
+  } catch (err) {
+    alert("Could not update: " + err.message);
+  }
+};
 
-const modal = document.getElementById("addModal");
-document.getElementById("addBtn").onclick = () => { modal.classList.add("open"); };
-document.getElementById("cancelAdd").onclick = () => { modal.classList.remove("open"); };
+// --- Referral (local demo, unaffected by backend) ---
+function renderReferrals() {
+  const referrals = seedHospitalsIfEmpty && JSON.parse(localStorage.getItem("medchain_referrals_v1") || "[]");
+  const rBody = document.getElementById("referralBody");
+  const rEmpty = document.getElementById("referralEmpty");
+  rBody.innerHTML = "";
+  if (!referrals.length) { rEmpty.style.display = "block"; return; }
+  rEmpty.style.display = "none";
+  referrals.slice().reverse().forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><div class="name-cell"><div class="mini-avatar">${initialsOf(r.patientName)}</div>${r.patientName}</div></td>
+      <td>${r.hospitalName}</td>
+      <td>${r.reason}</td>
+      <td><span class="status-pill review">${r.status}</span></td>`;
+    rBody.appendChild(tr);
+  });
+}
 
 const referModal = document.getElementById("referModal");
-document.getElementById("cancelRefer").onclick = () => { referModal.classList.remove("open"); };
-
-document.getElementById("confirmRefer").onclick = async () => {
-  const patientId = referModal.dataset.patientId;
-  const p = PATIENTS[patientId];
+document.getElementById("quickReferBtn").onclick = () => {
+  const sel = document.getElementById("rPatient");
+  sel.innerHTML = patients.map(p => `<option value="${p.username}">${p.fullName}</option>`).join("");
+  const hospitals = seedHospitalsIfEmpty();
+  document.getElementById("rHospital").innerHTML = hospitals.map(h => `<option value="${h.id}">${h.name} — ${h.specialization}</option>`).join("");
+  referModal.classList.add("open");
+};
+document.getElementById("cancelRefer").onclick = () => referModal.classList.remove("open");
+document.getElementById("confirmRefer").onclick = () => {
+  const patientUsername = document.getElementById("rPatient").value;
+  const patient = patients.find(p => p.username === patientUsername);
   const hospitalId = document.getElementById("rHospital").value;
   const hospital = getHospitalById(hospitalId);
   const reason = document.getElementById("rReason").value.trim() || "Specialist consultation required";
-  const date = document.getElementById("rDate").value || new Date().toISOString().slice(0, 10);
 
-  await addReferralToChain({
-    patientId, patientName: p.name, doctorName: DOCTOR_NAME,
-    hospitalId, hospitalName: hospital.name, reason, date,
-  });
+  const referrals = JSON.parse(localStorage.getItem("medchain_referrals_v1") || "[]");
+  referrals.push({ patientName: patient.fullName, hospitalName: hospital.name, reason, status: "Pending" });
+  localStorage.setItem("medchain_referrals_v1", JSON.stringify(referrals));
 
   referModal.classList.remove("open");
   document.getElementById("rReason").value = "";
-  document.getElementById("rDate").value = "";
-
+  document.getElementById("toastMsg").textContent = `${patient.fullName} referred to ${hospital.name}`;
   const toast = document.getElementById("toast");
-  document.getElementById("toastMsg").textContent = `${p.name} referred to ${hospital.name}`;
   toast.classList.add("show");
   setTimeout(() => toast.classList.remove("show"), 2800);
-  render();
-};
-
-document.getElementById("confirmAdd").onclick = async () => {
-  const patientId = document.getElementById("fPatient").value;
-  const diagnosis = document.getElementById("fDiagnosis").value.trim() || "General consultation";
-  const date = document.getElementById("fDate").value || new Date().toISOString().slice(0, 10);
-  const p = PATIENTS[patientId];
-
-  await addRecordToChain({ patientId, patientName: p.name, doctorName: DOCTOR_NAME, diagnosis, date });
-  modal.classList.remove("open");
-  document.getElementById("fDiagnosis").value = "";
-  document.getElementById("fDate").value = "";
-
-  const toast = document.getElementById("toast");
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2600);
-  render();
+  renderReferrals();
 };
 
 render();

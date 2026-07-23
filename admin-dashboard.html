@@ -25,7 +25,7 @@
 
     <div class="sidebar-footer">
       <span class="role-pill">Admin</span>
-      <a class="nav-item" href="login.html"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
+      <a class="nav-item" href="#" onclick="logout(); return false;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
     </div>
   </aside>
 
@@ -42,8 +42,8 @@
           <input placeholder="Search users or records...">
         </div>
         <div class="profile-chip">
-          <div class="avatar">AD</div>
-          <div class="who"><b>Admin</b>Administrator</div>
+          <div class="avatar" id="adminAvatar">AD</div>
+          <div class="who"><b id="adminNameLabel">Admin</b>Administrator</div>
         </div>
       </div>
     </div>
@@ -51,13 +51,13 @@
     <div class="stat-row">
       <div class="stat-card">
         <div class="label">Total Users</div>
-        <div class="value">4</div>
-        <div class="delta neutral">2 patients · 1 doctor · 1 admin</div>
+        <div class="value" id="statUsers">—</div>
+        <div class="delta neutral" id="statUsersBreak">—</div>
       </div>
       <div class="stat-card">
-        <div class="label">Total Records on Chain</div>
-        <div class="value" id="statBlocks">—</div>
-        <div class="delta">Including genesis block</div>
+        <div class="label">Total Records</div>
+        <div class="value" id="statRecords">—</div>
+        <div class="delta">Live from database</div>
       </div>
       <div class="stat-card">
         <div class="label">Last Verified</div>
@@ -66,17 +66,13 @@
       </div>
     </div>
 
-    <!-- Chain Audit -->
     <div class="card">
       <div class="card-head">
-        <div><h3>Blockchain Integrity Audit</h3><div class="hint">Recomputes every block's SHA-256 hash and its link to the previous block — same check as <code>Blockchain.isChainValid()</code></div></div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn-outline" id="tamperBtn">Simulate Tampering (Demo)</button>
-          <button class="btn btn-primary" id="verifyBtn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6z"/></svg>
-            Verify Chain
-          </button>
-        </div>
+        <div><h3>Blockchain Integrity Audit</h3><div class="hint">Calls <code>/api/admin/chain/verify</code> — the real backend re-validates every block's hash chain</div></div>
+        <button class="btn btn-primary" id="verifyBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6z"/></svg>
+          Verify Chain
+        </button>
       </div>
 
       <div class="chain-banner idle" id="chainBanner">
@@ -85,151 +81,110 @@
         </div>
         <div>
           <b id="bannerTitle">Chain not yet verified</b>
-          <span id="bannerText">Run a verification pass to confirm no record has been tampered with.</span>
+          <span id="bannerText">Run a verification pass against the live backend.</span>
         </div>
       </div>
-
-      <table>
-        <thead><tr><th>#</th><th>Patient</th><th>Diagnosis</th><th>Prev. Hash</th><th>Block Hash</th></tr></thead>
-        <tbody id="chainBody"></tbody>
-      </table>
     </div>
 
-    <!-- Hospital Management -->
     <div class="card">
-      <div class="card-head">
-        <div><h3>Hospital Management</h3><div class="hint">Specialist hospitals available for patient referrals</div></div>
-        <button class="btn btn-primary" id="addHospitalBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
-          Add Hospital
-        </button>
-      </div>
+      <div class="card-head"><div><h3>All Records</h3><div class="hint">Every medical record in the system</div></div></div>
       <table>
-        <thead><tr><th>Hospital</th><th>Specialization</th><th>Location (Lat, Lng)</th><th>Available Slots</th><th></th></tr></thead>
-        <tbody id="hospitalBody"></tbody>
+        <thead><tr><th>Patient</th><th>Doctor</th><th>Date</th><th>Diagnosis</th><th>Block Hash</th></tr></thead>
+        <tbody id="recordsBody"></tbody>
       </table>
+      <div class="empty-state" id="recordsEmpty" style="display:none;"><p>No records in the system yet.</p></div>
     </div>
 
-    <!-- User management -->
     <div class="card">
       <div class="card-head"><div><h3>User Management</h3><div class="hint">All registered accounts</div></div></div>
       <table>
         <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td><div class="name-cell"><div class="mini-avatar">RK</div>Ravi Kumar</div></td><td>patient1</td><td><span class="role-badge patient">Patient</span></td><td><span class="status-pill normal">Active</span></td></tr>
-          <tr><td><div class="name-cell"><div class="mini-avatar">AJ</div>Anita Joshi</div></td><td>patient2</td><td><span class="role-badge patient">Patient</span></td><td><span class="status-pill normal">Active</span></td></tr>
-          <tr><td><div class="name-cell"><div class="mini-avatar">DS</div>Dr. Sharma</div></td><td>doctor1</td><td><span class="role-badge doctor">Doctor</span></td><td><span class="status-pill normal">Active</span></td></tr>
-          <tr><td><div class="name-cell"><div class="mini-avatar">AD</div>Administrator</div></td><td>admin1</td><td><span class="role-badge admin">Admin</span></td><td><span class="status-pill normal">Active</span></td></tr>
-        </tbody>
+        <tbody id="userBody"></tbody>
       </table>
     </div>
   </main>
 </div>
 
-<!-- Add Hospital Modal -->
-<div class="modal-overlay" id="hospitalModal">
-  <div class="modal">
-    <h3>Add Hospital</h3>
-    <div class="modal-sub">This hospital will become available for doctor referrals.</div>
-    <div class="field"><label>Hospital Name</label><input id="hName" placeholder="e.g. Apex Multispecialty Hospital"></div>
-    <div class="field"><label>Specialization</label><input id="hSpecialization" placeholder="e.g. Nephrology"></div>
-    <div class="field" style="display:flex; gap:10px;">
-      <div style="flex:1;"><label>Latitude</label><input id="hLat" placeholder="e.g. 18.52"></div>
-      <div style="flex:1;"><label>Longitude</label><input id="hLng" placeholder="e.g. 73.85"></div>
-    </div>
-    <div class="field"><label>Available Appointment Slots</label><input id="hSlots" type="number" min="0" placeholder="e.g. 4"></div>
-    <div class="modal-actions">
-      <button class="btn btn-outline" id="cancelHospital">Cancel</button>
-      <button class="btn btn-primary" id="confirmHospital">Add Hospital</button>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 
-<script src="hospital-engine.js"></script>
-<script src="chain-engine.js"></script>
+<script src="auth-guard.js"></script>
+<script src="api-client.js"></script>
+<script>
+const session = requireRole("ADMIN");
+</script>
 <script>
 function fmtDate(d) {
-  if (d === "—") return d;
-  return new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  if (!d) return "—";
+  const date = Array.isArray(d) ? new Date(d[0], d[1] - 1, d[2]) : new Date(d);
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+function shortHash(h) {
+  if (!h) return "Not yet chained";
+  return h.slice(0, 8) + "…" + h.slice(-6);
+}
+function initialsOf(name) {
+  if (!name) return "?";
+  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
+}
+function roleClass(role) {
+  const r = (role || "").toLowerCase();
+  if (r.includes("doctor")) return "doctor";
+  if (r.includes("admin")) return "admin";
+  return "patient";
 }
 
-async function renderChainTable(brokenAt) {
-  const chain = (loadChainRaw()) || [];
-  document.getElementById("statBlocks").textContent = chain.length;
+async function render() {
+  document.getElementById("adminNameLabel").textContent = session.fullName || session.username;
+  document.getElementById("adminAvatar").textContent = initialsOf(session.fullName || session.username);
 
-  const body = document.getElementById("chainBody");
-  body.innerHTML = "";
-  chain.forEach((b, i) => {
-    const isBroken = brokenAt === i;
-    const label = b.type === "referral" ? `Referred to ${b.hospitalName}` : b.diagnosis;
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${i}</td>
-      <td>${b.patientName}</td>
-      <td>${label}</td>
-      <td style="font-family:'Courier New',monospace; font-size:11px; color:var(--muted);">${b.prevHash === "0" ? "0 (genesis)" : shortHash(b.prevHash)}</td>
-      <td><span class="hash-chip ${isBroken ? 'broken' : ''}"><span class="dot">${isBroken ? "!" : "✓"}</span>${shortHash(b.hash)}</span></td>`;
-    body.appendChild(tr);
-  });
-}
-
-function renderHospitalTable() {
-  const list = seedHospitalsIfEmpty();
-  const body = document.getElementById("hospitalBody");
-  body.innerHTML = "";
-  list.forEach(h => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><b>${h.name}</b></td>
-      <td><span class="role-badge doctor">${h.specialization}</span></td>
-      <td style="font-family:'Courier New',monospace; font-size:11.5px; color:var(--muted);">${h.lat.toFixed(4)}, ${h.lng.toFixed(4)}</td>
-      <td>${h.slots}</td>
-      <td><button class="btn btn-outline" style="padding:5px 10px; font-size:11px;" onclick="handleRemoveHospital('${h.id}')">Remove</button></td>`;
-    body.appendChild(tr);
-  });
-}
-
-function handleRemoveHospital(id) {
-  removeHospital(id);
-  renderHospitalTable();
-}
-
-const hModal = document.getElementById("hospitalModal");
-document.getElementById("addHospitalBtn").onclick = () => { hModal.classList.add("open"); };
-document.getElementById("cancelHospital").onclick = () => { hModal.classList.remove("open"); };
-
-document.getElementById("confirmHospital").onclick = () => {
-  const name = document.getElementById("hName").value.trim();
-  const specialization = document.getElementById("hSpecialization").value.trim();
-  const lat = document.getElementById("hLat").value.trim();
-  const lng = document.getElementById("hLng").value.trim();
-  const slots = document.getElementById("hSlots").value.trim();
-
-  if (!name || !specialization || !lat || !lng || !slots) {
-    document.getElementById("toastMsg").textContent = "Please fill in all hospital details";
-    const toast = document.getElementById("toast");
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 2400);
+  let records = [], users = [];
+  try {
+    [records, users] = await Promise.all([
+      apiRequest("/api/admin/records"),
+      apiRequest("/api/admin/users"),
+    ]);
+  } catch (err) {
+    document.getElementById("statUsers").textContent = "Offline";
     return;
   }
 
-  addHospital({ name, lat, lng, specialization, slots });
-  hModal.classList.remove("open");
-  ["hName", "hSpecialization", "hLat", "hLng", "hSlots"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("statUsers").textContent = users.length;
+  const patients = users.filter(u => (u.role || "").toLowerCase() === "patient").length;
+  const doctors = users.filter(u => (u.role || "").toLowerCase() === "doctor").length;
+  const admins = users.filter(u => (u.role || "").toLowerCase() === "admin").length;
+  document.getElementById("statUsersBreak").textContent = `${patients} patients · ${doctors} doctors · ${admins} admins`;
+  document.getElementById("statRecords").textContent = records.length;
 
-  document.getElementById("toastMsg").textContent = "Hospital added successfully";
-  const toast = document.getElementById("toast");
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2400);
-  renderHospitalTable();
-};
+  const rBody = document.getElementById("recordsBody");
+  const rEmpty = document.getElementById("recordsEmpty");
+  rBody.innerHTML = "";
+  if (!records.length) {
+    rEmpty.style.display = "block";
+  } else {
+    rEmpty.style.display = "none";
+    records.slice().reverse().forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.patientUsername}</td>
+        <td>${r.doctorUsername}</td>
+        <td>${fmtDate(r.date)}</td>
+        <td>${r.diagnosis}</td>
+        <td><span class="hash-chip"><span class="dot">✓</span>${shortHash(r.blockHash)}</span></td>`;
+      rBody.appendChild(tr);
+    });
+  }
 
-async function init() {
-  await seedChainIfEmpty();
-  await renderChainTable(null);
-  renderHospitalTable();
+  const uBody = document.getElementById("userBody");
+  uBody.innerHTML = "";
+  users.forEach(u => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><div class="name-cell"><div class="mini-avatar">${initialsOf(u.fullName)}</div>${u.fullName}</div></td>
+      <td>${u.username}</td>
+      <td><span class="role-badge ${roleClass(u.role)}">${u.role}</span></td>
+      <td><span class="status-pill ${u.active ? 'normal' : 'critical'}">${u.active ? 'Active' : 'Inactive'}</span></td>`;
+    uBody.appendChild(tr);
+  });
 }
 
 document.getElementById("verifyBtn").onclick = async () => {
@@ -239,42 +194,30 @@ document.getElementById("verifyBtn").onclick = async () => {
 
   banner.className = "chain-banner idle";
   title.textContent = "Verifying...";
-  text.textContent = "Recomputing SHA-256 hashes for every block.";
+  text.textContent = "Asking the backend to recompute every block's SHA-256 hash.";
 
-  const result = await verifyChain();
-  const now = new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
-  document.getElementById("statVerified").textContent = now;
+  try {
+    const result = await apiRequest("/api/admin/chain/verify");
+    const now = new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+    document.getElementById("statVerified").textContent = now;
 
-  if (result.valid) {
-    banner.className = "chain-banner valid";
-    title.textContent = "Chain Valid — No Tampering Detected";
-    text.textContent = "Every block's hash matches its stored value and correctly links to the previous block.";
-    await renderChainTable(null);
-  } else {
+    if (result.valid) {
+      banner.className = "chain-banner valid";
+      title.textContent = "Chain Valid — No Tampering Detected";
+      text.textContent = "The backend confirms every block's hash matches its stored value and links correctly to the previous block.";
+    } else {
+      banner.className = "chain-banner invalid";
+      title.textContent = "Tampering Detected";
+      text.textContent = "The backend found a mismatch somewhere in the chain — a record may have been altered outside the normal flow.";
+    }
+  } catch (err) {
     banner.className = "chain-banner invalid";
-    title.textContent = `Tampering Detected at Block ${result.brokenAt}`;
-    text.textContent = result.reason === "hash-mismatch"
-      ? "This block's recomputed hash no longer matches its stored hash — its data was modified."
-      : "This block's previous-hash link is broken — the chain has been altered.";
-    await renderChainTable(result.brokenAt);
+    title.textContent = "Could not verify";
+    text.textContent = err.message;
   }
 };
 
-document.getElementById("tamperBtn").onclick = () => {
-  const chain = loadChainRaw() || [];
-  const recordBlocks = chain.map((b, i) => i).filter(i => chain[i].type === "record");
-  if (!recordBlocks.length) return;
-  const idx = recordBlocks[Math.floor(Math.random() * recordBlocks.length)];
-  tamperRecord(idx);
-
-  const toast = document.getElementById("toast");
-  document.getElementById("toastMsg").textContent = `Block ${idx} silently modified — click "Verify Chain" to detect it`;
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 3200);
-  renderChainTable(null);
-};
-
-init();
+render();
 </script>
 </body>
 </html>

@@ -25,7 +25,7 @@
 
     <div class="sidebar-footer">
       <span class="role-pill">Patient</span>
-      <a class="nav-item" href="login.html"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
+      <a class="nav-item" href="#" onclick="logout(); return false;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
     </div>
   </aside>
 
@@ -46,15 +46,6 @@
           <div class="who"><b id="patientNameLabel">Ravi Kumar</b>Patient</div>
         </div>
       </div>
-    </div>
-
-    <!-- demo patient switcher (standalone-mode helper, no login wired yet) -->
-    <div class="card" style="padding:12px 18px; display:flex; align-items:center; gap:12px; margin-bottom:18px;">
-      <span style="font-size:12px; color:var(--muted); font-weight:600;">Viewing as (demo):</span>
-      <select id="patientSwitch" style="border:1px solid var(--border); border-radius:8px; padding:6px 10px; font-size:12.5px; font-family:inherit;">
-        <option value="ravi">Ravi Kumar</option>
-        <option value="anita">Anita Joshi</option>
-      </select>
     </div>
 
     <div class="stat-row">
@@ -112,9 +103,8 @@
   <div class="modal">
     <h3>Upload New Record</h3>
     <div class="modal-sub">This will be hashed with SHA-256 and appended to the chain.</div>
-    <div class="field"><label>Doctor</label><input id="fDoctor" placeholder="e.g. Dr. Sharma"></div>
+    <div class="field"><label>Doctor Username</label><input id="fDoctor" placeholder="e.g. doctor1"></div>
     <div class="field"><label>Diagnosis / Notes</label><input id="fDiagnosis" placeholder="e.g. Routine checkup"></div>
-    <div class="field"><label>Date</label><input id="fDate" type="date"></div>
     <div class="modal-actions">
       <button class="btn btn-outline" id="cancelUpload">Cancel</button>
       <button class="btn btn-primary" id="confirmUpload">Add to Chain</button>
@@ -127,27 +117,45 @@
   <span id="toastMsg">Record added and hash-verified</span>
 </div>
 
-<script src="chain-engine.js"></script>
+<script src="auth-guard.js"></script>
+<script src="api-client.js"></script>
 <script>
-const PATIENTS = {
-  ravi: { name: "Ravi Kumar", initials: "RK" },
-  anita: { name: "Anita Joshi", initials: "AJ" },
-};
-let currentPatient = "ravi";
-
+const session = requireRole("PATIENT");
+</script>
+<script>
 function fmtDate(d) {
-  if (d === "—") return d;
-  return new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  if (!d) return "—";
+  // Handles both ISO string ("2026-07-21") and Jackson array ([2026,7,21]) formats
+  const date = Array.isArray(d) ? new Date(d[0], d[1] - 1, d[2]) : new Date(d);
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+function shortHash(h) {
+  if (!h) return "Not yet chained";
+  return h.slice(0, 8) + "…" + h.slice(-6);
+}
+
+function initialsOf(name) {
+  if (!name) return "?";
+  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
 async function render() {
-  const chain = await seedChainIfEmpty();
-  const p = PATIENTS[currentPatient];
-  document.getElementById("greetTitle").textContent = "Welcome back, " + p.name.split(" ")[0];
-  document.getElementById("patientNameLabel").textContent = p.name;
-  document.getElementById("patientAvatar").textContent = p.initials;
+  document.getElementById("greetTitle").textContent = "Welcome back, " + (session.fullName || session.username).split(" ")[0];
+  document.getElementById("patientNameLabel").textContent = session.fullName || session.username;
+  document.getElementById("patientAvatar").textContent = initialsOf(session.fullName || session.username);
 
-  const records = chain.filter(b => b.type === "record" && b.patientId === currentPatient);
+  let records = [];
+  try {
+    records = await apiRequest("/api/patient/records");
+  } catch (err) {
+    document.getElementById("recordsBody").innerHTML = "";
+    document.getElementById("emptyState").style.display = "block";
+    document.getElementById("emptyState").querySelector("p").textContent =
+      "Could not reach the backend. Make sure the Spring Boot server is running on localhost:8080.";
+    return;
+  }
+
   const body = document.getElementById("recordsBody");
   const empty = document.getElementById("emptyState");
   body.innerHTML = "";
@@ -160,9 +168,9 @@ async function render() {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${fmtDate(r.date)}</td>
-        <td>${r.doctorName}</td>
+        <td>${r.doctorUsername}</td>
         <td>${r.diagnosis}</td>
-        <td><span class="hash-chip"><span class="dot">✓</span>${shortHash(r.hash)}</span></td>`;
+        <td><span class="hash-chip"><span class="dot">✓</span>${shortHash(r.blockHash)}</span></td>`;
       body.appendChild(tr);
     });
   }
@@ -170,53 +178,32 @@ async function render() {
   document.getElementById("statTotal").textContent = records.length;
   document.getElementById("statLast").textContent = records.length ? fmtDate(records[records.length - 1].date) : "—";
 
-  // Referral status
-  const referrals = chain.filter(b => b.type === "referral" && b.patientId === currentPatient);
+  // Referral status — local demo only, backend has no hospital/referral API yet
   const refContent = document.getElementById("referralContent");
-  if (!referrals.length) {
-    refContent.innerHTML = `<div class="empty-state"><p>No active referrals. You'll see it here if a doctor refers you to a specialist hospital.</p></div>`;
-  } else {
-    const r = referrals[referrals.length - 1];
-    refContent.innerHTML = `
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;">
-        <div>
-          <div style="font-size:15px; font-weight:700; color:var(--ink); margin-bottom:4px;">${r.hospitalName}</div>
-          <div style="font-size:12.5px; color:var(--muted);">Referred by ${r.doctorName} on ${fmtDate(r.date)}</div>
-          <div style="font-size:12.5px; color:var(--slate); margin-top:6px;">"${r.reason}"</div>
-        </div>
-        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
-          <span class="status-pill review">${r.status}</span>
-          <span class="hash-chip"><span class="dot">✓</span>${shortHash(r.hash)}</span>
-        </div>
-      </div>`;
-  }
+  refContent.innerHTML = `<div class="empty-state"><p>Referral tracking is a local demo feature — not yet connected to the backend.</p></div>`;
 }
-
-document.getElementById("patientSwitch").addEventListener("change", (e) => {
-  currentPatient = e.target.value;
-  render();
-});
 
 const modal = document.getElementById("uploadModal");
 document.getElementById("uploadBtn").onclick = () => { modal.classList.add("open"); };
 document.getElementById("cancelUpload").onclick = () => { modal.classList.remove("open"); };
 
 document.getElementById("confirmUpload").onclick = async () => {
-  const doctorName = document.getElementById("fDoctor").value.trim() || "Dr. Unspecified";
+  const doctorUsername = document.getElementById("fDoctor").value.trim() || "doctor1";
   const diagnosis = document.getElementById("fDiagnosis").value.trim() || "General consultation";
-  const date = document.getElementById("fDate").value || new Date().toISOString().slice(0, 10);
-  const p = PATIENTS[currentPatient];
 
-  await addRecordToChain({ patientId: currentPatient, patientName: p.name, doctorName, diagnosis, date });
-  modal.classList.remove("open");
-  document.getElementById("fDoctor").value = "";
-  document.getElementById("fDiagnosis").value = "";
-  document.getElementById("fDate").value = "";
+  try {
+    await apiRequest("/api/patient/records", { method: "POST", body: { doctorUsername, diagnosis } });
+    modal.classList.remove("open");
+    document.getElementById("fDoctor").value = "";
+    document.getElementById("fDiagnosis").value = "";
 
-  const toast = document.getElementById("toast");
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2600);
-  render();
+    const toast = document.getElementById("toast");
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 2600);
+    render();
+  } catch (err) {
+    alert("Could not upload record: " + err.message);
+  }
 };
 
 render();

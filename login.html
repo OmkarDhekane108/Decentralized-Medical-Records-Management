@@ -17,46 +17,48 @@
 
             <label>Login As</label>
             <select id="role">
-                <option value="Patient">Patient</option>
-                <option value="Doctor">Doctor</option>
-                <option value="Admin">Admin</option>
+                <option value="PATIENT">Patient</option>
+                <option value="DOCTOR">Doctor</option>
+                <option value="ADMIN">Admin</option>
             </select>
 
-            <button type="submit">Login</button>
+            <button type="submit" id="loginBtn">Login</button>
             <p id="errorMsg" style="color: red; display: none; margin-top: 10px;"></p>
         </form>
     </div>
 
+    <script src="api-client.js"></script>
     <script>
-        // Demo hardcoded credentials (matches Authentication.java)
-        const USERS = {
-            "patient1": { password: "patient123", role: "Patient" },
-            "patient2": { password: "patient123", role: "Patient" },
-            "doctor1":  { password: "doctor123",  role: "Doctor" },
-            "admin1":   { password: "admin123",   role: "Admin" }
-        };
-
         const DASHBOARD_BY_ROLE = {
-            "Patient": "patient-dashboard.html",
-            "Doctor": "doctor-dashboard.html",
-            "Admin": "admin-dashboard.html"
+            "PATIENT": "patient-dashboard.html",
+            "DOCTOR": "doctor-dashboard.html",
+            "ADMIN": "admin-dashboard.html"
         };
 
-        document.getElementById("loginForm").addEventListener("submit", function (e) {
+        document.getElementById("loginForm").addEventListener("submit", async function (e) {
             e.preventDefault();
             const username = document.getElementById("username").value.trim();
             const password = document.getElementById("password").value;
             const role = document.getElementById("role").value;
             const errorMsg = document.getElementById("errorMsg");
+            const btn = document.getElementById("loginBtn");
 
-            const user = USERS[username];
-            if (user && user.password === password && user.role === role) {
-                localStorage.setItem("loggedInUser", username);
-                localStorage.setItem("loggedInRole", role);
-                window.location.href = DASHBOARD_BY_ROLE[role];
-            } else {
-                errorMsg.textContent = "Invalid username, password, or role.";
+            errorMsg.style.display = "none";
+            btn.disabled = true;
+            btn.textContent = "Logging in...";
+
+            try {
+                const res = await apiLogin(username, password, role);
+                localStorage.setItem("mc_token", res.token);
+                localStorage.setItem("mc_username", res.username);
+                localStorage.setItem("mc_role", res.role);
+                localStorage.setItem("mc_fullName", res.fullName || res.username);
+                window.location.href = DASHBOARD_BY_ROLE[res.role.toUpperCase()];
+            } catch (err) {
+                errorMsg.textContent = err.message || "Login failed. Is the backend server running on localhost:8080?";
                 errorMsg.style.display = "block";
+                btn.disabled = false;
+                btn.textContent = "Login";
             }
         });
     </script>
