@@ -3,7 +3,7 @@
    Talks to the Spring Boot backend (default: http://localhost:8080)
    ========================================================== */
 
-const API_BASE = "http://localhost:8081";
+const API_BASE = "https://decentralized-medical-records-management.onrender.com";
 
 function getToken() { return localStorage.getItem("mc_token"); }
 function getRole() { return localStorage.getItem("mc_role"); }
