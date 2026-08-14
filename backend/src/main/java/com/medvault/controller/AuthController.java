@@ -45,4 +45,27 @@ public class AuthController {
         tokenService.revoke(token);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
+        if (req.username == null || req.username.isBlank()) {
+            return ResponseEntity.status(400).body(new ErrorResponse("Username is required."));
+        }
+        if (req.password == null || req.password.length() < 6) {
+            return ResponseEntity.status(400).body(new ErrorResponse("Password must be at least 6 characters."));
+        }
+        if (userRepository.findByUsername(req.username).isPresent()) {
+            return ResponseEntity.status(409).body(new ErrorResponse("Username already exists. Please choose another."));
+        }
+
+        AppUser user = new AppUser(req.username, passwordEncoder.encode(req.password), "PATIENT", req.fullName);
+        user.setAge(req.age);
+        user.setWeight(req.weight);
+        user.setMobile(req.mobile);
+        user.setEmail(req.email);
+        userRepository.save(user);
+
+        String token = tokenService.issueToken(user.getUsername(), user.getRole());
+        return ResponseEntity.ok(new LoginResponse(token, user.getUsername(), user.getRole(), user.getFullName()));
+    }
 }

@@ -2,6 +2,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "MedVaultApplication",
+            "request": "launch",
+            "mainClass": "com.medvault.MedVaultApplication",
+            "projectName": "com.medvault-medvault-backend"
+        },
+        {
             "name": "Open Login Page (Live Server)",
             "request": "launch",
             "type": "chrome",

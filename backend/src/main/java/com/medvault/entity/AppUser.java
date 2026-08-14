@@ -14,15 +14,20 @@ public class AppUser {
     private String username;
 
     @Column(nullable = false)
-    private String passwordHash; // BCrypt hash, never store plaintext
+    private String passwordHash;
 
     @Column(nullable = false)
-    private String role; // PATIENT | DOCTOR | ADMIN
+    private String role;
 
     @Column(nullable = false)
     private String fullName;
 
     private boolean active = true;
+
+    private Integer age;
+    private Double weight;
+    private String mobile;
+    private String email;
 
     public AppUser() {}
 
@@ -44,4 +49,12 @@ public class AppUser {
     public void setFullName(String fullName) { this.fullName = fullName; }
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
+    public Double getWeight() { return weight; }
+    public void setWeight(Double weight) { this.weight = weight; }
+    public String getMobile() { return mobile; }
+    public void setMobile(String mobile) { this.mobile = mobile; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 }

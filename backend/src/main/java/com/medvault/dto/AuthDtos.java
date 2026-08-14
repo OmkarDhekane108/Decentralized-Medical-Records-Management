@@ -5,7 +5,7 @@ public class AuthDtos {
     public static class LoginRequest {
         public String username;
         public String password;
-        public String role; // Patient | Doctor | Admin — matches the login.html dropdown
+        public String role;
     }
 
     public static class LoginResponse {
@@ -20,6 +20,16 @@ public class AuthDtos {
             this.role = role;
             this.fullName = fullName;
         }
+    }
+
+    public static class RegisterRequest {
+        public String username;
+        public String password;
+        public String fullName;
+        public Integer age;
+        public Double weight;
+        public String mobile;
+        public String email;
     }
 
     public static class ErrorResponse {
