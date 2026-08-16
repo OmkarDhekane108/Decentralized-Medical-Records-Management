@@ -57,3 +57,27 @@ async function apiLogout() {
   localStorage.removeItem("mc_fullName");
   window.location.href = "login.html";
 }
+
+async function apiSendOtp(mobile) {
+  return apiRequest("/api/auth/send-otp", {
+    method: "POST",
+    auth: false,
+    body: { mobile },
+  });
+}
+
+async function apiVerifyOtp(mobile, otp) {
+  return apiRequest("/api/auth/verify-otp", {
+    method: "POST",
+    auth: false,
+    body: { mobile, otp },
+  });
+}
+
+async function apiRegister(data) {
+  return apiRequest("/api/auth/register", {
+    method: "POST",
+    auth: false,
+    body: data,
+  });
+}
