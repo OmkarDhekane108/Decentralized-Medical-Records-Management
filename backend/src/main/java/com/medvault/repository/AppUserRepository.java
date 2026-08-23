@@ -8,4 +8,7 @@ import java.util.List;
 public interface AppUserRepository extends JpaRepository<AppUser, Long> {
     Optional<AppUser> findByUsername(String username);
     List<AppUser> findByRole(String role);
+
+    Optional<AppUser> findByMobile(String mobile);
+    Optional<AppUser> findByEmail(String email);
 }
