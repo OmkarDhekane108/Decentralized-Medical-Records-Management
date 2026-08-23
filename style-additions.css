@@ -1,0 +1,140 @@
+/* ===== Add these rules to your existing style.css ===== */
+
+.login-container form {
+    display: flex;
+    flex-direction: column;
+}
+
+.login-container button.btn-reset {
+    margin-top: 10px;
+    background: linear-gradient(135deg, #b91c1c, #ef4444);
+}
+
+#successMsg {
+    color: #16a34a;
+    text-align: center;
+    font-size: 13px;
+    margin-top: 12px;
+}
+
+.switch-link {
+    margin-top: 18px;
+    font-size: 13px;
+    color: #6b7280;
+    text-align: center;
+}
+
+.switch-link a {
+    color: #1a7fb8;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.switch-link a:hover {
+    text-decoration: underline;
+}
+
+/* ===== Registration-specific additions ===== */
+
+.register-container {
+    max-width: 420px;
+}
+
+.avatar-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 6px;
+}
+
+.avatar-preview,
+.avatar-placeholder {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.avatar-placeholder {
+    background: #eef2ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    color: #9ca3af;
+}
+
+.avatar-row input[type="file"] {
+    flex: 1;
+    border: none;
+    padding: 0;
+    font-size: 13px;
+}
+
+.otp-row {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.otp-row input {
+    flex: 1;
+}
+
+.otp-verify-block {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.otp-verify-block input {
+    flex: 1;
+}
+
+.btn-otp {
+    width: auto;
+    white-space: nowrap;
+    margin-top: 0;
+    padding: 0 14px;
+    background: linear-gradient(135deg, #0f4c81, #1a7fb8);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-otp:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
+
+.field-status {
+    font-size: 12px;
+    margin-top: 6px;
+    min-height: 14px;
+}
+
+.status-info { color: #1a7fb8; }
+.status-success { color: #16a34a; }
+.status-error { color: #dc2626; }
+
+.hint-text {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 14px;
+    line-height: 1.5;
+}
+
+.login-container input:disabled {
+    background: #f3f4f6;
+    color: #6b7280;
+    cursor: not-allowed;
+}
+
+.login-container button:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+}
