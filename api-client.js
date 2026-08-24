@@ -1,83 +1,70 @@
-/* ==========================================================
-   MedChain — Real backend API client
-   Talks to the Spring Boot backend (default: http://localhost:8080)
-   ========================================================== */
+// Point this at your Spring Boot backend.
+const API_BASE = "http://localhost:8080/api/auth";
 
-const API_BASE = "https://decentralized-medical-records-management.onrender.com";
-
-function getToken() { return localStorage.getItem("mc_token"); }
-function getRole() { return localStorage.getItem("mc_role"); }
-function getUsername() { return localStorage.getItem("mc_username"); }
-function getFullName() { return localStorage.getItem("mc_fullName"); }
-
-async function apiRequest(path, { method = "GET", body, auth = true } = {}) {
-  const headers = { "Content-Type": "application/json" };
-  if (auth) {
-    const token = getToken();
-    if (token) headers["Authorization"] = token;
-  }
-
-  const res = await fetch(API_BASE + path, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  if (res.status === 401) {
-    // Session expired or invalid — send back to login
-    localStorage.removeItem("mc_token");
-    localStorage.removeItem("mc_role");
-    window.location.href = "login.html";
-    throw new Error("Unauthorized");
-  }
-
+async function handleJsonResponse(res) {
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    let msg = "Request failed";
-    try { msg = (await res.json()).message || msg; } catch (e) {}
-    throw new Error(msg);
+    throw new Error(data.message || "Request failed.");
   }
-
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
+  return data;
 }
 
-async function apiLogin(username, password, role) {
-  return apiRequest("/api/auth/login", {
-    method: "POST",
-    auth: false,
-    body: { username, password, role },
-  });
-}
-
-async function apiLogout() {
-  try { await apiRequest("/api/auth/logout", { method: "POST" }); } catch (e) {}
-  localStorage.removeItem("mc_token");
-  localStorage.removeItem("mc_role");
-  localStorage.removeItem("mc_username");
-  localStorage.removeItem("mc_fullName");
-  window.location.href = "login.html";
-}
-
+// ---- Mobile OTP ----
 async function apiSendOtp(mobile) {
-  return apiRequest("/api/auth/send-otp", {
+  const res = await fetch(`${API_BASE}/send-otp`, {
     method: "POST",
-    auth: false,
-    body: { mobile },
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mobile }),
   });
+  return handleJsonResponse(res);
 }
 
 async function apiVerifyOtp(mobile, otp) {
-  return apiRequest("/api/auth/verify-otp", {
+  const res = await fetch(`${API_BASE}/verify-otp`, {
     method: "POST",
-    auth: false,
-    body: { mobile, otp },
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ mobile, otp }),
   });
+  return handleJsonResponse(res);
 }
 
-async function apiRegister(data) {
-  return apiRequest("/api/auth/register", {
+// ---- Email OTP ----
+async function apiSendEmailOtp(email) {
+  const res = await fetch(`${API_BASE}/send-email-otp`, {
     method: "POST",
-    auth: false,
-    body: data,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
   });
+  return handleJsonResponse(res);
+}
+
+async function apiVerifyEmailOtp(email, otp) {
+  const res = await fetch(`${API_BASE}/verify-email-otp`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, otp }),
+  });
+  return handleJsonResponse(res);
+}
+
+// ---- Register (multipart, includes profile picture) ----
+// Backend returns { message, username, password, role } - the plaintext
+// password is only ever shown here once (also emailed/texted), so show it
+// to the user or route them straight to login.html with it prefilled.
+async function apiRegisterWithPhoto(formData) {
+  const res = await fetch(`${API_BASE}/register`, {
+    method: "POST",
+    body: formData, // browser sets multipart Content-Type automatically
+  });
+  return handleJsonResponse(res);
+}
+
+// ---- Login ----
+async function apiLogin(username, password, role) {
+  const res = await fetch(`${API_BASE}/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password, role }),
+  });
+  return handleJsonResponse(res);
 }
