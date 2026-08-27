@@ -1,0 +1,286 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register - Medical Records</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page">
+        <div class="brand-side">
+            <div class="brand-header">
+                <span class="brand-logo">🏥</span>
+                <span class="brand-name">MedChain Care Hospital</span>
+            </div>
+            <div class="brand-illustration">🩺</div>
+            <h1>Your Health, <br>Securely Connected</h1>
+            <p>Create an account to access your medical records, book appointments, and connect with doctors — all in one place.</p>
+        </div>
+        <div class="form-side">
+            <div class="login-container register-container">
+                <div class="login-icon">📝</div>
+                <h2 id="registerTitle">Patient Registration</h2>
+                <p class="login-subtitle">Register by filling your details</p>
+
+                <form id="registerForm">
+
+                    <label>Profile Picture</label>
+                    <div class="avatar-row">
+                        <img id="avatarPreview" class="avatar-preview" src="" alt="" style="display:none;">
+                        <div id="avatarPlaceholder" class="avatar-placeholder">👤</div>
+                        <input type="file" id="profilePicture" accept="image/png, image/jpeg">
+                    </div>
+
+                    <label>Full Name</label>
+                    <input type="text" id="fullName" placeholder="Enter your full name" required>
+
+                    <label>Weight (kg)</label>
+                    <input type="number" id="weight" min="1" step="0.1" placeholder="Enter your weight" required>
+
+                    <label>Mobile Number</label>
+                    <div class="otp-row">
+                        <input type="tel" id="mobile" placeholder="Enter mobile number" required>
+                        <button type="button" id="sendMobileOtpBtn" class="btn-otp">Send OTP</button>
+                    </div>
+                    <div id="mobileOtpBlock" class="otp-verify-block" style="display:none;">
+                        <input type="text" id="mobileOtp" placeholder="Enter OTP" maxlength="6">
+                        <button type="button" id="verifyMobileOtpBtn" class="btn-otp">Verify</button>
+                    </div>
+                    <p id="mobileStatus" class="field-status"></p>
+
+                    <label>Email</label>
+                    <div class="otp-row">
+                        <input type="email" id="email" placeholder="Enter your email" required>
+                        <button type="button" id="sendEmailOtpBtn" class="btn-otp">Send OTP</button>
+                    </div>
+                    <div id="emailOtpBlock" class="otp-verify-block" style="display:none;">
+                        <input type="text" id="emailOtp" placeholder="Enter OTP" maxlength="6">
+                        <button type="button" id="verifyEmailOtpBtn" class="btn-otp">Verify</button>
+                    </div>
+                    <p id="emailStatus" class="field-status"></p>
+
+                    <label>Register As</label>
+                    <select id="role">
+                        <option value="PATIENT">Patient</option>
+                        <option value="DOCTOR">Doctor</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
+
+                    <p class="hint-text">Your username and password will be generated automatically and sent to your verified mobile number (SMS/WhatsApp) and email.</p>
+
+                    <button type="submit" id="registerBtn" disabled>Submit</button>
+                    <button type="reset" id="resetBtn" class="btn-reset">Reset</button>
+
+                    <p id="errorMsg" style="display:none;"></p>
+                    <p id="successMsg" style="display:none;"></p>
+                </form>
+                <p class="switch-link">Already have an account? <a href="login.html">Login here</a></p>
+            </div>
+        </div>
+    </div>
+    <script src="api-client.js"></script>
+    <script>
+        const ROLE_TITLES = {
+            "PATIENT": "Patient Registration",
+            "DOCTOR": "Doctor Registration",
+            "ADMIN": "Admin Registration"
+        };
+        const roleSelect = document.getElementById("role");
+        const registerTitle = document.getElementById("registerTitle");
+        roleSelect.addEventListener("change", () => {
+            registerTitle.textContent = ROLE_TITLES[roleSelect.value];
+        });
+
+        const profilePictureInput = document.getElementById("profilePicture");
+        const avatarPreview = document.getElementById("avatarPreview");
+        const avatarPlaceholder = document.getElementById("avatarPlaceholder");
+        profilePictureInput.addEventListener("change", () => {
+            const file = profilePictureInput.files[0];
+            if (!file) return;
+
+            const allowedTypes = ["image/jpeg", "image/png"];
+            if (!allowedTypes.includes(file.type)) {
+                alert("Only JPEG or PNG images are allowed.");
+                profilePictureInput.value = "";
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const w = img.naturalWidth;
+                    const h = img.naturalHeight;
+                    if (w < 400 || h < 400) {
+                        alert("Image is too small (" + w + "x" + h + "px). Minimum size is 400x400 pixels.");
+                        profilePictureInput.value = "";
+                        return;
+                    }
+                    if (w !== h) {
+                        alert("Image must be square (1:1 aspect ratio). Yours is " + w + "x" + h + "px.");
+                        profilePictureInput.value = "";
+                        return;
+                    }
+                    avatarPreview.src = e.target.result;
+                    avatarPreview.style.display = "block";
+                    avatarPlaceholder.style.display = "none";
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        let mobileVerified = false;
+        let emailVerified = false;
+
+        const mobileInput = document.getElementById("mobile");
+        const emailInput = document.getElementById("email");
+        const registerBtn = document.getElementById("registerBtn");
+
+        function refreshSubmitState() {
+            registerBtn.disabled = !(mobileVerified && emailVerified);
+        }
+
+        const sendMobileOtpBtn = document.getElementById("sendMobileOtpBtn");
+        const mobileOtpBlock = document.getElementById("mobileOtpBlock");
+        const mobileOtpInput = document.getElementById("mobileOtp");
+        const verifyMobileOtpBtn = document.getElementById("verifyMobileOtpBtn");
+        const mobileStatus = document.getElementById("mobileStatus");
+
+        sendMobileOtpBtn.addEventListener("click", async () => {
+            const mobile = mobileInput.value.trim();
+            if (!mobile) {
+                mobileStatus.textContent = "Enter a mobile number first.";
+                mobileStatus.className = "field-status status-error";
+                return;
+            }
+            sendMobileOtpBtn.disabled = true;
+            sendMobileOtpBtn.textContent = "Sending...";
+            try {
+                await apiSendOtp(mobile);
+                mobileOtpBlock.style.display = "flex";
+                mobileStatus.textContent = "OTP sent to your mobile number.";
+                mobileStatus.className = "field-status status-info";
+            } catch (err) {
+                mobileStatus.textContent = err.message || "Failed to send OTP.";
+                mobileStatus.className = "field-status status-error";
+            } finally {
+                sendMobileOtpBtn.disabled = false;
+                sendMobileOtpBtn.textContent = "Send OTP";
+            }
+        });
+
+        verifyMobileOtpBtn.addEventListener("click", async () => {
+            const mobile = mobileInput.value.trim();
+            const otp = mobileOtpInput.value.trim();
+            if (!otp) return;
+            verifyMobileOtpBtn.disabled = true;
+            verifyMobileOtpBtn.textContent = "Verifying...";
+            try {
+                await apiVerifyOtp(mobile, otp);
+                mobileVerified = true;
+                mobileInput.disabled = true;
+                sendMobileOtpBtn.disabled = true;
+                mobileOtpInput.disabled = true;
+                verifyMobileOtpBtn.textContent = "Verified ✓";
+                mobileStatus.textContent = "Mobile number verified.";
+                mobileStatus.className = "field-status status-success";
+                refreshSubmitState();
+            } catch (err) {
+                mobileStatus.textContent = err.message || "Invalid OTP.";
+                mobileStatus.className = "field-status status-error";
+                verifyMobileOtpBtn.disabled = false;
+                verifyMobileOtpBtn.textContent = "Verify";
+            }
+        });
+
+        const sendEmailOtpBtn = document.getElementById("sendEmailOtpBtn");
+        const emailOtpBlock = document.getElementById("emailOtpBlock");
+        const emailOtpInput = document.getElementById("emailOtp");
+        const verifyEmailOtpBtn = document.getElementById("verifyEmailOtpBtn");
+        const emailStatus = document.getElementById("emailStatus");
+
+        sendEmailOtpBtn.addEventListener("click", async () => {
+            const email = emailInput.value.trim();
+            if (!email) {
+                emailStatus.textContent = "Enter an email address first.";
+                emailStatus.className = "field-status status-error";
+                return;
+            }
+            sendEmailOtpBtn.disabled = true;
+            sendEmailOtpBtn.textContent = "Sending...";
+            try {
+                await apiSendEmailOtp(email);
+                emailOtpBlock.style.display = "flex";
+                emailStatus.textContent = "OTP sent to your email.";
+                emailStatus.className = "field-status status-info";
+            } catch (err) {
+                emailStatus.textContent = err.message || "Failed to send OTP.";
+                emailStatus.className = "field-status status-error";
+            } finally {
+                sendEmailOtpBtn.disabled = false;
+                sendEmailOtpBtn.textContent = "Send OTP";
+            }
+        });
+
+        verifyEmailOtpBtn.addEventListener("click", async () => {
+            const email = emailInput.value.trim();
+            const otp = emailOtpInput.value.trim();
+            if (!otp) return;
+            verifyEmailOtpBtn.disabled = true;
+            verifyEmailOtpBtn.textContent = "Verifying...";
+            try {
+                await apiVerifyEmailOtp(email, otp);
+                emailVerified = true;
+                emailInput.disabled = true;
+                sendEmailOtpBtn.disabled = true;
+                emailOtpInput.disabled = true;
+                verifyEmailOtpBtn.textContent = "Verified ✓";
+                emailStatus.textContent = "Email verified.";
+                emailStatus.className = "field-status status-success";
+                refreshSubmitState();
+            } catch (err) {
+                emailStatus.textContent = err.message || "Invalid OTP.";
+                emailStatus.className = "field-status status-error";
+                verifyEmailOtpBtn.disabled = false;
+                verifyEmailOtpBtn.textContent = "Verify";
+            }
+        });
+
+        document.getElementById("registerForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            if (!mobileVerified || !emailVerified) return;
+
+            const errorMsg = document.getElementById("errorMsg");
+            const successMsg = document.getElementById("successMsg");
+            errorMsg.style.display = "none";
+            successMsg.style.display = "none";
+            registerBtn.disabled = true;
+            registerBtn.textContent = "Registering...";
+
+            const formData = new FormData();
+            formData.append("fullName", document.getElementById("fullName").value.trim());
+            formData.append("weight", document.getElementById("weight").value);
+            formData.append("mobile", mobileInput.value.trim());
+            formData.append("email", emailInput.value.trim());
+            formData.append("role", roleSelect.value);
+            const photoFile = profilePictureInput.files[0];
+            if (photoFile) formData.append("profilePicture", photoFile);
+
+            try {
+                await apiRegisterWithPhoto(formData);
+                successMsg.textContent = "Registration successful! Your username and password have been sent to your mobile number (SMS/WhatsApp) and email.";
+                successMsg.style.display = "block";
+                setTimeout(() => {
+                    window.location.href = "login.html";
+                }, 2500);
+            } catch (err) {
+                errorMsg.textContent = err.message || "Registration failed. Is the backend server running?";
+                errorMsg.style.display = "block";
+                registerBtn.disabled = false;
+                registerBtn.textContent = "Submit";
+            }
+        });
+    </script>
+</body>
+</html>

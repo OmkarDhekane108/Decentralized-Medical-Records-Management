@@ -1,140 +1,168 @@
-/* ===== Add these rules to your existing style.css ===== */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
 
-.login-container form {
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f4c81, #1a7fb8);
+}
+
+.page {
+    display: flex;
+    min-height: 100vh;
+    flex-wrap: wrap;
+}
+
+/* Left branding side */
+.brand-side {
+    flex: 1;
+    min-width: 320px;
+    padding: 50px 60px;
+    color: #ffffff;
     display: flex;
     flex-direction: column;
+    justify-content: center;
 }
 
-.login-container button.btn-reset {
-    margin-top: 10px;
-    background: linear-gradient(135deg, #b91c1c, #ef4444);
-}
-
-#successMsg {
-    color: #16a34a;
-    text-align: center;
-    font-size: 13px;
-    margin-top: 12px;
-}
-
-.switch-link {
-    margin-top: 18px;
-    font-size: 13px;
-    color: #6b7280;
-    text-align: center;
-}
-
-.switch-link a {
-    color: #1a7fb8;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.switch-link a:hover {
-    text-decoration: underline;
-}
-
-/* ===== Registration-specific additions ===== */
-
-.register-container {
-    max-width: 420px;
-}
-
-.avatar-row {
+.brand-header {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 6px;
+    gap: 10px;
+    margin-bottom: 40px;
+    font-weight: 700;
+    font-size: 18px;
+    color: #ffd166;
 }
 
-.avatar-preview,
-.avatar-placeholder {
+.brand-logo {
+    font-size: 26px;
+}
+
+.brand-illustration {
+    font-size: 90px;
+    margin-bottom: 24px;
+}
+
+.brand-side h1 {
+    font-size: 34px;
+    line-height: 1.3;
+    margin-bottom: 16px;
+}
+
+.brand-side p {
+    font-size: 15px;
+    color: #dbeafe;
+    max-width: 420px;
+    line-height: 1.6;
+}
+
+/* Right form side */
+.form-side {
+    flex: 1;
+    min-width: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+}
+
+.login-container {
+    background: #ffffff;
+    padding: 40px 36px;
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+}
+
+.login-icon {
     width: 56px;
     height: 56px;
-    border-radius: 50%;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-.avatar-placeholder {
     background: #eef2ff;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 26px;
-    color: #9ca3af;
+    margin: 0 auto 16px;
 }
 
-.avatar-row input[type="file"] {
-    flex: 1;
-    border: none;
-    padding: 0;
+.login-container h2 {
+    color: #1f2937;
+    font-size: 22px;
+    margin-bottom: 6px;
+}
+
+.login-subtitle {
+    color: #6b7280;
     font-size: 13px;
+    margin-bottom: 24px;
 }
 
-.otp-row {
-    display: flex;
-    gap: 8px;
-    align-items: stretch;
+.login-container form {
+    text-align: left;
 }
 
-.otp-row input {
-    flex: 1;
+.login-container label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+    margin-top: 16px;
 }
 
-.otp-verify-block {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
+.login-container input,
+.login-container select {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
 }
 
-.otp-verify-block input {
-    flex: 1;
+.login-container input:focus,
+.login-container select:focus {
+    border-color: #1a7fb8;
 }
 
-.btn-otp {
-    width: auto;
-    white-space: nowrap;
-    margin-top: 0;
-    padding: 0 14px;
+.login-container button {
+    width: 100%;
+    margin-top: 24px;
+    padding: 12px;
     background: linear-gradient(135deg, #0f4c81, #1a7fb8);
     color: #fff;
     border: none;
     border-radius: 8px;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 600;
     cursor: pointer;
+    transition: opacity 0.2s;
 }
 
-.btn-otp:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-}
-
-.field-status {
-    font-size: 12px;
-    margin-top: 6px;
-    min-height: 14px;
-}
-
-.status-info { color: #1a7fb8; }
-.status-success { color: #16a34a; }
-.status-error { color: #dc2626; }
-
-.hint-text {
-    font-size: 12px;
-    color: #6b7280;
-    margin-top: 14px;
-    line-height: 1.5;
-}
-
-.login-container input:disabled {
-    background: #f3f4f6;
-    color: #6b7280;
-    cursor: not-allowed;
+.login-container button:hover {
+    opacity: 0.9;
 }
 
 .login-container button:disabled {
     background: #9ca3af;
     cursor: not-allowed;
+}
+
+#errorMsg {
+    color: #dc2626;
+    text-align: center;
+    font-size: 13px;
+    margin-top: 12px;
+}
+
+@media (max-width: 768px) {
+    .brand-side { text-align: center; align-items: center; padding: 30px; }
+    .brand-side p { margin: 0 auto; }
 }

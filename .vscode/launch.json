@@ -1,19 +1,38 @@
+@'
 {
     "version": "0.2.0",
+    "compounds": [
+        {
+            "name": "Full Stack (Backend + Frontend + Browser)",
+            "configurations": [
+                "MedVaultApplication (Backend)",
+                "Start Frontend Server"
+            ],
+            "stopAll": true
+        }
+    ],
     "configurations": [
         {
             "type": "java",
-            "name": "MedVaultApplication",
+            "name": "MedVaultApplication (Backend)",
             "request": "launch",
             "mainClass": "com.medvault.MedVaultApplication",
-            "projectName": "com.medvault-medvault-backend"
+            "projectName": "com.medvault-medvault-backend",
+            "timeout": 30000
         },
         {
-            "name": "Open Login Page (Live Server)",
+            "type": "node-terminal",
+            "name": "Start Frontend Server",
             "request": "launch",
-            "type": "chrome",
-            "url": "http://127.0.0.1:5500/login.html",
-            "webRoot": "${workspaceFolder}"
+            "command": "npx http-server -p 5501 -c-1 .",
+            "cwd": "${workspaceFolder}",
+            "serverReadyAction": {
+                "pattern": "Available on:",
+                "uriFormat": "http://127.0.0.1:5501/register.html",
+                "action": "openExternally"
+            }
         }
     ]
 }
+'@ | Set-Content -Path .vscode\launch.json -Encoding UTF8
+Get-Content .vscode\launch.json

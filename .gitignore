@@ -29,3 +29,6 @@ target/
 *.class
 target/
 
+
+uploads/
+backend/target/
