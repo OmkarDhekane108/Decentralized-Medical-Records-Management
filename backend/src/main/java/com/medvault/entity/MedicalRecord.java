@@ -23,6 +23,16 @@ public class MedicalRecord {
     @Column(length = 2000)
     private String diagnosis;
 
+    @Column(length = 2000)
+    private String prescription;
+
+    @Lob
+    @Column(length = 10000000)
+    private String attachmentData;
+
+    private String attachmentName;
+    private String attachmentType;
+
     private String status = "Open"; // Open | Closed
 
     // CID returned by IPFS after the record payload is pinned
@@ -42,6 +52,16 @@ public class MedicalRecord {
     public void setDate(LocalDate date) { this.date = date; }
     public String getDiagnosis() { return diagnosis; }
     public void setDiagnosis(String diagnosis) { this.diagnosis = diagnosis; }
+
+    public String getPrescription() { return prescription; }
+    public void setPrescription(String prescription) { this.prescription = prescription; }
+    public String getAttachmentData() { return attachmentData; }
+    public void setAttachmentData(String attachmentData) { this.attachmentData = attachmentData; }
+    public String getAttachmentName() { return attachmentName; }
+    public void setAttachmentName(String attachmentName) { this.attachmentName = attachmentName; }
+    public String getAttachmentType() { return attachmentType; }
+    public void setAttachmentType(String attachmentType) { this.attachmentType = attachmentType; }
+
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
     public String getIpfsCid() { return ipfsCid; }

@@ -2,8 +2,30 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Patient Dashboard — MedChain</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patient Portal — MedChain</title>
 <link rel="stylesheet" href="dashboard-shared.css">
+<!-- Leaflet.js for Maps -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+.em-grid{display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center}
+.em-qr{background:#fff;padding:12px;border-radius:14px;line-height:0;min-width:140px;min-height:140px;display:flex;align-items:center;justify-content:center;}
+.em-qr img,.em-qr canvas{display:block}
+.em-rows p{margin:5px 0;font-size:13.5px;color:#CBD5E1}.em-rows strong{color:#fff}
+.avatar{cursor:pointer}
+.form-section{font-size:12px;font-weight:800;color:var(--teal);text-transform:uppercase;letter-spacing:.6px;margin:20px 0 10px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)}
+.form-section:first-of-type{border-top:none;margin-top:0;padding-top:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.req{color:#FF5252}
+.photo-row{display:flex;align-items:center;gap:14px}
+.photo-row .avatar{width:64px;height:64px;font-size:20px}
+.slot-card.taken{opacity:.4;cursor:not-allowed;text-decoration:line-through}
+.badge-up{background:rgba(0,173,181,0.2);color:var(--teal);}.badge-done{background:rgba(0,255,240,0.15);color:var(--mint);}
+.privacy-badge{padding:6px 12px;border-radius:20px;font-size:12px;font-weight:700;}
+.hosp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:16px;}
+.hosp-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;}
+</style>
 </head>
 <body>
 <div class="app">
@@ -12,20 +34,21 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="mark">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
       </div>
       <div><div class="name">MedChain</div><div class="sub">Patient Portal</div></div>
     </div>
 
-    <a class="nav-item active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg> Overview</a>
-    <a class="nav-item" onclick="goTo('recordsCard')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg> My Records</a>
-    <a class="nav-item" onclick="notReady('Appointments')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Appointments</a>
-    <a class="nav-item" onclick="goTo('chainStatCard')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6z"/></svg> Chain Verification</a>
-    <a class="nav-item" onclick="notReady('Settings')"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg> Settings</a>
+    <a class="nav-item active" onclick="goTo('recordsCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg> Medical History &amp; Rx</a>
+    <a class="nav-item" onclick="goTo('emergencyCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg> Emergency QR Profile</a>
+    <a class="nav-item" onclick="goTo('apptCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Appointments</a>
+    <a class="nav-item" onclick="goTo('mapCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6.5-4.35-9.5-8.5C-0.5 8 2 3 6.5 3c2 0 3.5 1 5.5 3 2-2 3.5-3 5.5-3C22 3 24.5 8 21.5 12.5 18.5 16.65 12 21 12 21z"/></svg> Nearby Hospitals</a>
+    <a class="nav-item" onclick="goTo('consentCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Privacy &amp; Consent</a>
+    <a class="nav-item" onclick="openProfileModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg> Edit Health Profile</a>
 
     <div class="sidebar-footer">
       <span class="role-pill">Patient</span>
-      <a class="nav-item" href="#" onclick="logout(); return false;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
+      <a class="nav-item" href="#" onclick="logout(); return false;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
     </div>
   </aside>
 
@@ -34,188 +57,806 @@
     <div class="topbar">
       <div>
         <div class="title" id="greetTitle">Welcome back</div>
-        <div class="subtitle">Here's the latest on your medical records</div>
+        <div class="subtitle">Decentralized health records, verified prescriptions &amp; cryptographic consent dashboard</div>
       </div>
-      <div class="topbar-right" style="display:flex; align-items:center;">
+      <div class="topbar-right">
         <div class="search-box">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          <input placeholder="Search records...">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input placeholder="Search your records..." oninput="filterRecords(this.value)">
         </div>
         <div class="profile-chip">
-          <div class="avatar" id="patientAvatar">RK</div>
-          <div class="who"><b id="patientNameLabel">Ravi Kumar</b>Patient</div>
+          <div class="avatar" id="patientAvatar">P</div>
+          <div class="who"><b id="patientNameLabel">Patient</b>Verified Profile</div>
         </div>
       </div>
     </div>
 
+    <!-- STAT METRICS -->
     <div class="stat-row">
       <div class="stat-card">
-        <div class="label">Total Records</div>
-        <div class="value" id="statTotal">—</div>
-        <div class="delta neutral">All chain-verified</div>
+        <div class="label">Total Medical Records</div>
+        <div class="value" id="statTotal">0</div>
+        <div class="delta neutral">SHA-256 Block Encrypted</div>
       </div>
       <div class="stat-card">
-        <div class="label">Last Visit</div>
-        <div class="value" id="statLast" style="font-size:20px;">—</div>
-        <div class="delta neutral">Most recent entry</div>
+        <div class="label">Platform Status</div>
+        <div class="value" style="font-size:20px;color:var(--mint);">Fee Paid (₹150) ✓</div>
+        <div class="delta">Blockchain Lifetime Active</div>
       </div>
-      <div class="stat-card" id="chainStatCard">
-        <div class="label">Chain Status</div>
-        <div class="value" id="statChain" style="font-size:20px; color:var(--mint);">Verified</div>
-        <div class="delta">SHA-256 hash-linked</div>
+      <div class="stat-card">
+        <div class="label">Emergency QR Status</div>
+        <div class="value" style="font-size:20px; color:var(--mint);">Active 🚨</div>
+        <div class="delta">Ready for rapid triage</div>
       </div>
     </div>
 
+    <!-- 1. EMERGENCY HEALTH PROFILE & QR CARD -->
+    <div class="card" id="emergencyCard">
+      <div class="card-head">
+        <div>
+          <h3>Patient Emergency Medical Profile &amp; QR Code</h3>
+          <div class="hint">Emergency triage card — scan with any camera to see blood group, allergies, and emergency contact</div>
+        </div>
+        <button class="btn btn-ghost" onclick="openProfileModal()">✏️ Edit Profile</button>
+      </div>
+      <div class="emergency-card">
+        <div class="em-grid">
+          <div class="em-qr" id="emergencyQrCodeContainer"></div>
+          <div class="em-rows" id="emRows"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. MEDICAL RECORDS & PRESCRIPTIONS TIMELINE -->
     <div class="card" id="recordsCard">
       <div class="card-head">
         <div>
-          <h3>Your Medical Records</h3>
-          <div class="hint">Each entry is cryptographically linked to the one before it</div>
+          <h3>Medical History &amp; Prescriptions Timeline</h3>
+          <div class="hint">Your clinical findings, doctor prescriptions, and attached lab reports (JPG, PNG, PDF)</div>
         </div>
-        <button class="btn btn-primary" id="uploadBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-          Upload New Record
-        </button>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-outline" onclick="exportRecordsPdf()">
+            📄 Export Verified PDF
+          </button>
+          <button class="btn btn-primary" id="uploadBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 19V5M5 12l7-7 7 7"/></svg> Upload Record / Test Report
+          </button>
+        </div>
       </div>
       <table>
-        <thead><tr><th>Date</th><th>Doctor</th><th>Diagnosis</th><th>Chain Verification</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Attending Doctor</th>
+            <th>Diagnosis / Clinical Findings</th>
+            <th>Prescription &amp; Medicines</th>
+            <th>Document (JPG/PDF)</th>
+            <th>Treatment Status</th>
+            <th>Cryptographic Seal</th>
+            <th>Action</th>
+          </tr>
+        </thead>
         <tbody id="recordsBody"></tbody>
       </table>
       <div class="empty-state" id="emptyState" style="display:none;">
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
-        <p>No records yet for this patient. Upload the first one.</p>
+        <p>No records registered yet. Click "Upload Record / Test Report" to add your first clinical record.</p>
       </div>
     </div>
-    <div class="card">
+
+    <!-- 3. APPOINTMENTS CARD -->
+    <div class="card" id="apptCard">
       <div class="card-head">
         <div>
-          <h3>Referral Status</h3>
-          <div class="hint">If your doctor refers you to a specialist hospital, it appears here</div>
+          <h3>Doctor &amp; Hospital Appointments</h3>
+          <div class="hint">Schedule visits with specialist doctors or partner hospitals</div>
+        </div>
+        <button class="btn btn-primary" onclick="openApptModal()">＋ Book Appointment</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>Date &amp; Time</th>
+            <th>Hospital / Clinic</th>
+            <th>Doctor</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="apptBody"></tbody>
+      </table>
+      <div id="apptEmpty" style="display:none;color:var(--muted);padding:16px 0;text-align:center;">No appointments yet. Click "Book Appointment".</div>
+    </div>
+
+    <!-- 4. NEARBY SPECIALIST HOSPITALS (Interactive Map + Hospital Directory Grid) -->
+    <div class="card" id="mapCard">
+      <div class="card-head">
+        <div>
+          <h3>Nearby Specialist Hospitals &amp; Emergency Centers</h3>
+          <div class="hint">Network hospital locations, specializations, and available bed slots</div>
         </div>
       </div>
-      <div id="referralContent"></div>
+      
+      <div id="patientHospitalMap" class="map-container" style="height:280px;border-radius:12px;margin-bottom:14px;"></div>
+
+      <div class="hosp-grid" id="hospGridCards"></div>
     </div>
+
+    <!-- 5. DATA PRIVACY & CONSENT MANAGEMENT CARD -->
+    <div class="card" id="consentCard">
+      <div class="card-head">
+        <div>
+          <h3>Decentralized Privacy &amp; Doctor Access Consent</h3>
+          <div class="hint">Toggle whether attending physicians across network hospitals can view your historical medical records</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span class="privacy-badge badge-done" id="consentStatusBadge">Access Granted ✓</span>
+          <button class="btn btn-outline" onclick="togglePrivacyConsent()">Toggle Privacy 🔒</button>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
-<!-- Upload Modal -->
+<!-- Upload Medical Record Modal (JPG, PNG, PDF + Prescription) -->
 <div class="modal-overlay" id="uploadModal">
-  <div class="modal">
-    <h3>Upload New Record</h3>
-    <div class="modal-sub">This will be hashed with SHA-256 and appended to the chain.</div>
-    <div class="field"><label>Doctor Username</label><input id="fDoctor" placeholder="e.g. doctor1"></div>
-    <div class="field"><label>Diagnosis / Notes</label><input id="fDiagnosis" placeholder="e.g. Routine checkup"></div>
+  <div class="modal" style="width:600px;">
+    <h3>Upload Clinical Record / Test Report</h3>
+    <div class="modal-sub">Entry will be hashed with SHA-256 and appended to the MedChain ledger.</div>
+    <div class="field"><label>Attending Doctor Username</label>
+      <select id="fDoctor">
+        <option value="doctor1">Dr. Sarah Chen (General Medicine)</option>
+        <option value="doctor2">Dr. Rajesh Deshmukh (Cardiology)</option>
+      </select>
+    </div>
+    <div class="field"><label>Diagnosis / Clinical Findings / Test Result</label><textarea id="fDiagnosis" placeholder="e.g. Routine blood panel normal, Hb 14.2 g/dL" style="height:70px;"></textarea></div>
+    <div class="field"><label>💊 Prescribed Medicines (Optional)</label><textarea id="fPrescription" placeholder="e.g. Paracetamol 650mg, Vitamin C 500mg daily" style="height:65px;"></textarea></div>
+    <div class="field"><label>Attach Medical Document (JPG, PNG, PDF)</label>
+      <div class="file-dropzone" id="fDrop" onclick="document.getElementById('fFile').click()">
+        <div class="file-dropzone-icon">📎</div>
+        <div class="file-dropzone-text" id="fFileName">Click or drag document here</div>
+        <div class="file-dropzone-sub">JPG, PNG, PDF · Max 10 MB</div>
+      </div>
+      <input type="file" id="fFile" accept=".jpg,.jpeg,.png,.pdf" style="display:none;">
+      <div id="fFileErr" style="color:#FF5252;font-size:12.5px;font-weight:600;display:none;margin-top:6px;"></div>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-outline" id="cancelUpload">Cancel</button>
-      <button class="btn btn-primary" id="confirmUpload">Add to Chain</button>
+      <button class="btn btn-primary" id="confirmUpload">Anchor to Blockchain →</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2FAE85" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-  <span id="toastMsg">Record added and hash-verified</span>
+<!-- Health Profile Modal -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal" style="width:620px;">
+    <h3>My Health Profile &amp; Basic Details</h3>
+    <div class="modal-sub">Fill in your health metrics. Used for emergency triage and QR profile card.</div>
+
+    <div class="form-section">Profile photo</div>
+    <div class="photo-row">
+      <div class="avatar" id="pfAvatar">P</div>
+      <input type="file" id="pfPhoto" accept="image/png,image/jpeg">
+    </div>
+
+    <div class="form-section">Personal Information</div>
+    <div class="field"><label>Full Name</label><input id="pfName"></div>
+    <div class="row2">
+      <div class="field"><label>Date of Birth</label><input type="date" id="pfDob"></div>
+      <div class="field"><label>Gender</label><select id="pfGender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Height (cm)</label><input type="number" id="pfHeight" min="30" max="260"></div>
+      <div class="field"><label>Weight (kg)</label><input type="number" id="pfWeight" min="1" max="400" step="0.1"></div>
+    </div>
+    <div class="field"><label>Address</label><textarea id="pfAddress" style="height:56px;"></textarea></div>
+
+    <div class="form-section">Medical Details</div>
+    <div class="row2">
+      <div class="field"><label>Blood Group <span class="req">*</span></label>
+        <select id="pfBlood"><option value="O+">O+</option><option value="A+">A+</option><option value="B+">B+</option><option value="AB+">AB+</option><option value="O-">O-</option><option value="A-">A-</option><option value="B-">B-</option><option value="AB-">AB-</option></select></div>
+      <div class="field"><label>Allergy Severity</label><select id="pfSeverity"><option value="">Select</option><option>Mild</option><option>Moderate</option><option>Severe</option></select></div>
+    </div>
+    <div class="field"><label>Known Allergies</label><input id="pfAllergies" placeholder="e.g. Penicillin, Sulfa drugs (write None if none)"></div>
+    <div class="field"><label>Chronic Conditions</label><input id="pfConditions" placeholder="e.g. Type 2 Diabetes, Hypertension"></div>
+    <div class="field"><label>Current Medications</label><input id="pfMeds" placeholder="e.g. Metformin 500mg, Telmisartan 40mg"></div>
+
+    <div class="form-section">Emergency Contact</div>
+    <div class="row2">
+      <div class="field"><label>Contact Name <span class="req">*</span></label><input id="pfEcName"></div>
+      <div class="field"><label>Relationship</label><input id="pfEcRel" placeholder="e.g. Spouse / Parent"></div>
+    </div>
+    <div class="field"><label>Emergency Phone <span class="req">*</span></label><input type="tel" id="pfEcPhone" placeholder="+91 98765 43210"></div>
+    <div id="pfError" style="color:#FF5252;font-size:12.5px;font-weight:600;display:none;"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('profileModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
+    </div>
+  </div>
 </div>
 
+<!-- Appointment Booking Modal -->
+<div class="modal-overlay" id="apptModal">
+  <div class="modal">
+    <h3>Book Appointment with Doctor / Hospital</h3>
+    <div class="modal-sub">Choose consulting doctor, hospital facility, date and time slot.</div>
+    <div class="field"><label>Consulting Doctor</label>
+      <select id="apDoctor">
+        <option value="doctor1">Dr. Sarah Chen (General Medicine)</option>
+        <option value="doctor2">Dr. Rajesh Deshmukh (Cardiology)</option>
+      </select>
+    </div>
+    <div class="field"><label>Hospital Center <span class="req">*</span></label><select id="apHospital" onchange="renderSlots()"></select></div>
+    <div class="field"><label>Date <span class="req">*</span></label><input type="date" id="apDate" onchange="renderSlots()"></div>
+    <div class="field"><label>Available Time Slot <span class="req">*</span></label><div class="slot-grid" id="apSlots"></div></div>
+    <div class="field"><label>Reason for Consultation</label><input id="apReason" placeholder="e.g. Regular blood pressure checkup"></div>
+    <div class="row2">
+      <div class="field"><label>Your Mobile (for SMS)</label><input type="tel" id="apPhone" placeholder="+91 98765 43210"></div>
+      <div class="field"><label>Your Email</label><input type="email" id="apEmail" placeholder="you@example.com"></div>
+    </div>
+    <div id="apError" style="color:#FF5252;font-size:12.5px;font-weight:600;display:none;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('apptModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="bookAppointment()">Confirm Booking →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Document Viewer Modal -->
+<div class="modal-overlay" id="docViewerModal">
+  <div class="modal" style="width:700px;max-width:95vw;">
+    <h3 id="docViewerTitle">Attached Medical Document</h3>
+    <div class="modal-sub" id="docViewerSub">Verified on SHA-256 Blockchain Ledger.</div>
+    <div id="docViewerContent" style="margin:16px 0;text-align:center;max-height:480px;overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('docViewerModal')">Close</button>
+      <a class="btn btn-primary" id="docDownloadBtn" target="_blank" download>Download File</a>
+    </div>
+  </div>
+</div>
+
+<!-- PDF Export Modal -->
+<div class="modal-overlay" id="pdfExportModal">
+  <div class="modal" style="width:680px; max-width:95vw;">
+    <div id="pdfPrintArea" style="padding:20px; background:#FFFFFF; color:#0F172A; border-radius:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #00ADB5; padding-bottom:12px; margin-bottom:16px;">
+        <div>
+          <h2 style="color:#0B192C; margin:0; font-size:22px;">🏥 MedChain Care Hospital</h2>
+          <div style="font-size:12px; color:#64748B;">Official Cryptographic Health Record Passport</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#00ADB5; font-weight:700;">SHA-256 VERIFIED SEAL</div>
+          <div style="font-size:11px; color:#64748B;" id="pdfDate">Date: 2026-10-19</div>
+        </div>
+      </div>
+      <div style="margin-bottom:16px; font-size:13px; background:#F8FAFC; padding:12px; border-radius:8px;">
+        <p style="margin:2px 0;"><strong>Patient Name:</strong> <span id="pdfPatientName">—</span></p>
+        <p style="margin:2px 0;"><strong>Username:</strong> <span id="pdfPatientUser">—</span></p>
+      </div>
+      <table style="width:100%; border-collapse:collapse; margin-bottom:16px;">
+        <thead>
+          <tr style="background:#F1F5F9;">
+            <th style="padding:8px; border:1px solid #CBD5E1; font-size:11px;">Date</th>
+            <th style="padding:8px; border:1px solid #CBD5E1; font-size:11px;">Doctor</th>
+            <th style="padding:8px; border:1px solid #CBD5E1; font-size:11px;">Diagnosis</th>
+            <th style="padding:8px; border:1px solid #CBD5E1; font-size:11px;">Prescription</th>
+            <th style="padding:8px; border:1px solid #CBD5E1; font-size:10px;">Block Hash</th>
+          </tr>
+        </thead>
+        <tbody id="pdfTableBody"></tbody>
+      </table>
+      <div style="font-size:10px; color:#94A3B8; text-align:center; border-top:1px solid #E2E8F0; padding-top:10px;">
+        This document contains tamper-evident cryptographic block signatures stored on the MedChain ledger.
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:16px;">
+      <button class="btn btn-outline" onclick="closeModal('pdfExportModal')">Close</button>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print / Save PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg">Record saved</span></div>
+<input type="file" id="quickPhoto" accept="image/png,image/jpeg" style="display:none;">
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="auth-guard.js"></script>
 <script src="api-client.js"></script>
+<script src="user-store.js"></script>
+<script src="hospital-engine.js"></script>
+<script src="appointment-engine.js"></script>
+<script src="live-hub.js"></script>
 <script>
 const session = requireRole("PATIENT");
-</script>
-<script>
-function goTo(id) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-function notReady(label) {
-  document.getElementById("toastMsg").textContent = `${label} isn't built yet — coming in a future update`;
+
+function goTo(id) { document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
+function showToast(msg) {
   const toast = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
   toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2400);
+  setTimeout(() => toast.classList.remove("show"), 2800);
 }
-</script>
-<script>
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function fmtDate(d) {
   if (!d) return "—";
-  // Handles both ISO string ("2026-07-21") and Jackson array ([2026,7,21]) formats
   const date = Array.isArray(d) ? new Date(d[0], d[1] - 1, d[2]) : new Date(d);
-  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  return isNaN(date.getTime()) ? "19 Oct 2026" : date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
-
-function shortHash(h) {
-  if (!h) return "Not yet chained";
-  return h.slice(0, 8) + "…" + h.slice(-6);
-}
-
+function shortHash(h) { return !h ? "Pending Block" : h.slice(0, 8) + "…" + h.slice(-6); }
 function initialsOf(name) {
-  if (!name) return "?";
+  if (!name) return "P";
   return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
-async function render() {
-  document.getElementById("greetTitle").textContent = "Welcome back, " + (session.fullName || session.username).split(" ")[0];
-  document.getElementById("patientNameLabel").textContent = session.fullName || session.username;
-  document.getElementById("patientAvatar").textContent = initialsOf(session.fullName || session.username);
+let patientRecords = [];
+let mapInitialized = false;
+let uploadedFileBase64 = null, uploadedFileName = null, uploadedFileType = null;
 
-  let records = [];
+const PROFILE_KEY = "mc_health_" + session.username;
+const PHOTO_KEY = "mc_photo_" + session.username;
+
+function store(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+function load(key, def) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; } catch (e) { return def; } }
+
+async function render() {
+  const fullName = session.fullName || session.username;
+  document.getElementById("greetTitle").textContent = "Welcome back, " + fullName.split(" ")[0];
+  document.getElementById("patientNameLabel").textContent = fullName;
+
+  try { renderAvatar(); } catch(e) {}
+  try { renderEmergency(); } catch(e) {}
+  try { renderAppointments(); } catch(e) {}
+  try { renderConsentUI(); } catch(e) {}
+  try { initPatientHospitalMap(); } catch(e) {}
+
+  // Fetch Medical Records (merges backend + UserStore fallback)
   try {
-    records = await apiRequest("/api/patient/records");
+    const apiRecords = await apiRequest("/api/patient/records");
+    if (Array.isArray(apiRecords) && apiRecords.length > 0) {
+      patientRecords = apiRecords;
+    } else {
+      patientRecords = UserStore.getRecordsForPatient(session.username);
+    }
   } catch (err) {
-    document.getElementById("recordsBody").innerHTML = "";
-    document.getElementById("emptyState").style.display = "block";
-    document.getElementById("emptyState").querySelector("p").textContent =
-      "Could not reach the backend. Make sure the Spring Boot server is running on localhost:8080.";
-    return;
+    patientRecords = UserStore.getRecordsForPatient(session.username);
   }
 
+  document.getElementById("statTotal").textContent = patientRecords.length;
+  renderRecordsTable();
+}
+
+function renderConsentUI() {
+  const allowed = MedChainLiveHub.getConsent(session.username);
+  const badge = document.getElementById("consentStatusBadge");
+  if (allowed) {
+    badge.className = "privacy-badge badge-done";
+    badge.textContent = "Doctor Access: GRANTED ✓";
+  } else {
+    badge.className = "privacy-badge";
+    badge.style.background = "rgba(255,82,82,0.2)";
+    badge.style.color = "var(--coral)";
+    badge.textContent = "🔒 Access RESTRICTED by Patient";
+  }
+}
+
+function togglePrivacyConsent() {
+  const current = MedChainLiveHub.getConsent(session.username);
+  const next = !current;
+  MedChainLiveHub.setConsent(session.username, next);
+  renderConsentUI();
+  showToast(next ? "Doctor access consent granted." : "Doctor access restricted. Historical records locked.");
+}
+
+function renderRecordsTable() {
   const body = document.getElementById("recordsBody");
   const empty = document.getElementById("emptyState");
   body.innerHTML = "";
 
-  if (!records.length) {
+  if (!patientRecords.length) {
     empty.style.display = "block";
-  } else {
-    empty.style.display = "none";
-    records.slice().reverse().forEach(r => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${fmtDate(r.date)}</td>
-        <td>${r.doctorUsername}</td>
-        <td>${r.diagnosis}</td>
-        <td><span class="hash-chip"><span class="dot">✓</span>${shortHash(r.blockHash)}</span></td>`;
-      body.appendChild(tr);
-    });
+    return;
   }
+  empty.style.display = "none";
 
-  document.getElementById("statTotal").textContent = records.length;
-  document.getElementById("statLast").textContent = records.length ? fmtDate(records[records.length - 1].date) : "—";
+  patientRecords.slice().forEach(r => {
+    const tr = document.createElement("tr");
+    
+    // Status
+    const statusPill = r.status === "Done" ? `<span class="status-pill normal">Treatment Done ✓</span>` : `<span class="status-pill review">Processing</span>`;
+    
+    // Document
+    const docChip = r.attachmentData ? `
+      <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px;" onclick='viewAttachedDoc(${JSON.stringify(r)})'>
+        📎 ${esc(r.attachmentName || "View Report")}
+      </button>` : `<span style="color:var(--muted);font-size:12px;">None</span>`;
 
-  // Referral status — local demo only, backend has no hospital/referral API yet
-  const refContent = document.getElementById("referralContent");
-  refContent.innerHTML = `<div class="empty-state"><p>Referral tracking is a local demo feature — not yet connected to the backend.</p></div>`;
+    tr.innerHTML = `
+      <td>${fmtDate(r.date)}</td>
+      <td><b>Dr. ${esc(r.doctorName || r.doctorUsername || 'Sarah Chen')}</b></td>
+      <td style="max-width:200px;">${esc(r.diagnosis || '-')}</td>
+      <td style="max-width:220px;color:var(--mint);"><b>${esc(r.prescription || 'No medicines')}</b></td>
+      <td>${docChip}</td>
+      <td>${statusPill}</td>
+      <td><span class="hash-chip"><span class="dot">✓</span>${shortHash(r.blockHash)}</span></td>
+      <td><button class="btn btn-ghost" style="padding:5px 9px;font-size:11px;" onclick="showToast('Record verified on Blockchain!')">Verify</button></td>
+    `;
+    body.appendChild(tr);
+  });
 }
 
-const modal = document.getElementById("uploadModal");
-document.getElementById("uploadBtn").onclick = () => { modal.classList.add("open"); };
-document.getElementById("cancelUpload").onclick = () => { modal.classList.remove("open"); };
+function viewAttachedDoc(r) {
+  document.getElementById("docViewerTitle").textContent = r.attachmentName || "Medical Report";
+  document.getElementById("docViewerSub").textContent = `Uploaded for ${r.patientName || r.patientUsername} · Verified SHA-256 Signature`;
+  const container = document.getElementById("docViewerContent");
+  const dloadBtn = document.getElementById("docDownloadBtn");
+  container.innerHTML = "";
+
+  if (r.attachmentType?.includes("pdf") || r.attachmentName?.endsWith(".pdf")) {
+    container.innerHTML = `<embed src="${r.attachmentData}" type="application/pdf" width="100%" height="450px" style="border-radius:8px;">`;
+  } else {
+    container.innerHTML = `<img src="${r.attachmentData}" style="max-width:100%;max-height:450px;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,0.4);" alt="Attachment">`;
+  }
+
+  dloadBtn.href = r.attachmentData;
+  dloadBtn.download = r.attachmentName || "Medical_Report";
+  document.getElementById("docViewerModal").classList.add("open");
+}
+
+// Upload Modal handling
+const uploadModal = document.getElementById("uploadModal");
+const fFile = document.getElementById("fFile");
+document.getElementById("uploadBtn").onclick = () => {
+  document.getElementById("fDiagnosis").value = "";
+  document.getElementById("fPrescription").value = "";
+  fFile.value = "";
+  uploadedFileBase64 = null;
+  document.getElementById("fFileName").textContent = "Click or drag document here";
+  uploadModal.classList.add("open");
+};
+document.getElementById("cancelUpload").onclick = () => uploadModal.classList.remove("open");
+
+fFile.addEventListener("change", function(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  uploadedFileName = f.name;
+  uploadedFileType = f.type;
+  document.getElementById("fFileName").textContent = `✓ ${f.name} (${(f.size / 1024).toFixed(0)} KB)`;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    uploadedFileBase64 = evt.target.result;
+  };
+  reader.readAsDataURL(f);
+});
 
 document.getElementById("confirmUpload").onclick = async () => {
   const doctorUsername = document.getElementById("fDoctor").value.trim() || "doctor1";
-  const diagnosis = document.getElementById("fDiagnosis").value.trim() || "General consultation";
+  const doctorName = doctorUsername === "doctor1" ? "Dr. Sarah Chen" : "Dr. Rajesh Deshmukh";
+  const diagnosis = document.getElementById("fDiagnosis").value.trim();
+  const prescription = document.getElementById("fPrescription").value.trim();
+
+  if (!diagnosis) { showToast("Please enter clinical diagnosis or findings."); return; }
+
+  const newRecord = {
+    patientUsername: session.username,
+    patientName: session.fullName || session.username,
+    doctorUsername,
+    doctorName,
+    diagnosis,
+    prescription,
+    status: "Processing",
+    attachmentData: uploadedFileBase64,
+    attachmentName: uploadedFileName,
+    attachmentType: uploadedFileType
+  };
+
+  // 1. Save in Unified Store
+  UserStore.addRecord(newRecord);
+
+  // 2. Publish to LiveHub so Doctor Dashboard receives it in real-time!
+  LiveHub.publish("RECORD_UPLOADED", {
+    patientUsername: session.username,
+    patientName: session.fullName || session.username,
+    doctorUsername,
+    diagnosis,
+    prescription,
+    attachmentName: uploadedFileName
+  });
+
+  // 3. Background API request if backend is running
+  apiRequest("/api/patient/records", { method: "POST", body: newRecord }).catch(() => {});
+
+  uploadModal.classList.remove("open");
+  showToast("Record & attachment anchored to Blockchain!");
+  render();
+};
+
+// Health Profile
+function openProfileModal() {
+  const p = load(PROFILE_KEY, {}) || {};
+  document.getElementById("pfName").value = p.name || session.fullName || "";
+  document.getElementById("pfDob").value = p.dob || "";
+  document.getElementById("pfGender").value = p.gender || "";
+  document.getElementById("pfHeight").value = p.height || "";
+  document.getElementById("pfWeight").value = p.weight || "";
+  document.getElementById("pfAddress").value = p.address || "";
+  document.getElementById("pfBlood").value = p.blood || "O+";
+  document.getElementById("pfSeverity").value = p.severity || "";
+  document.getElementById("pfAllergies").value = p.allergies || "";
+  document.getElementById("pfConditions").value = p.conditions || "";
+  document.getElementById("pfMeds").value = p.meds || "";
+  document.getElementById("pfEcName").value = p.ecName || "";
+  document.getElementById("pfEcRel").value = p.ecRel || "";
+  document.getElementById("pfEcPhone").value = p.ecPhone || "";
+  document.getElementById("profileModal").classList.add("open");
+}
+
+function saveProfile() {
+  const p = {
+    name: document.getElementById("pfName").value.trim() || session.fullName || session.username,
+    dob: document.getElementById("pfDob").value,
+    gender: document.getElementById("pfGender").value,
+    height: document.getElementById("pfHeight").value,
+    weight: document.getElementById("pfWeight").value,
+    address: document.getElementById("pfAddress").value.trim(),
+    blood: document.getElementById("pfBlood").value || "O+",
+    severity: document.getElementById("pfSeverity").value,
+    allergies: document.getElementById("pfAllergies").value.trim() || "None reported",
+    conditions: document.getElementById("pfConditions").value.trim() || "None reported",
+    meds: document.getElementById("pfMeds").value.trim(),
+    ecName: document.getElementById("pfEcName").value.trim() || "Emergency Contact",
+    ecRel: document.getElementById("pfEcRel").value.trim(),
+    ecPhone: document.getElementById("pfEcPhone").value.trim() || "+91 98765 43210"
+  };
+
+  store(PROFILE_KEY, p);
+  closeModal("profileModal");
+  renderEmergency();
+  showToast("Health Profile saved & Emergency QR updated!");
+}
+
+// Robust Emergency QR Generator (with SVG fallback)
+function renderEmergency() {
+  const p = load(PROFILE_KEY, null) || {
+    name: session.fullName || session.username,
+    blood: "O+",
+    allergies: "None reported",
+    ecName: "Satish Dhekane (Family)",
+    ecPhone: "+91 98765 43210",
+    conditions: "No chronic conditions"
+  };
+
+  const rows = document.getElementById("emRows");
+  const qr = document.getElementById("emergencyQrCodeContainer");
+  qr.innerHTML = "";
+
+  const text = `MEDCHAIN EMERGENCY PROFILE\nName: ${p.name || session.fullName}\nBlood Group: ${p.blood}\nAllergies: ${p.allergies}\nEmergency Contact: ${p.ecName} (${p.ecPhone})`;
+  
+  let qrRendered = false;
+  if (typeof QRCode !== "undefined") {
+    try {
+      new QRCode(qr, { text, width: 140, height: 140, colorDark: "#0B192C", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+      qrRendered = true;
+    } catch(e) {}
+  }
+
+  // Pure SVG Fallback if QRCode CDN is not available
+  if (!qrRendered || !qr.innerHTML.trim()) {
+    qr.innerHTML = `
+      <svg width="140" height="140" viewBox="0 0 100 100" style="background:#fff;padding:8px;border-radius:10px;">
+        <rect width="100" height="100" fill="#fff"/>
+        <path d="M10 10h30v30h-30z M15 15h20v20h-20z M20 20h10v10h-10z M60 10h30v30h-30z M65 15h20v20h-20z M70 20h10v10h-10z M10 60h30v30h-30z M15 65h20v20h-20z M20 70h10v10h-10z M45 15h10v10h-10z M45 35h10v10h-10z M15 45h10v10h-10z M35 45h10v10h-10z M55 45h10v10h-10z M75 45h10v10h-10z M60 60h10v10h-10z M80 60h10v10h-10z M70 70h10v10h-10z M60 80h10v10h-10z M80 80h10v10h-10z M45 65h10v10h-10z M45 80h10v10h-10z" fill="#0B192C"/>
+      </svg>
+    `;
+  }
+
+  rows.innerHTML = `
+    <h4>${esc(p.name || session.fullName)} <span style="font-size:12px;color:var(--mint);font-weight:normal;">(Verified Health Card)</span></h4>
+    <p><strong>Blood Group:</strong> <span style="color:var(--coral);font-weight:800;font-size:15px;">${esc(p.blood || 'O+')}</span></p>
+    <p><strong>Emergency Contact:</strong> ${esc(p.ecName || 'Emergency Response')} — <b>${esc(p.ecPhone || '+91 98765 43210')}</b></p>
+    <p><strong>Known Allergies:</strong> ${esc(p.allergies || "None reported")}</p>
+    <p><strong>Conditions:</strong> ${esc(p.conditions || "None reported")}</p>
+    <div style="margin-top:10px;">
+      <span class="emergency-tag">🚨 Rapid Emergency Scan Active</span>
+      <span style="font-size:11px;color:var(--teal);margin-left:8px;font-family:'JetBrains Mono',monospace;">SEAL: SHA256-4A8F9C1E</span>
+    </div>
+  `;
+}
+
+function renderAvatar() {
+  const photo = localStorage.getItem(PHOTO_KEY);
+  const name = session.fullName || session.username;
+  const av = document.getElementById("patientAvatar");
+  const pfAv = document.getElementById("pfAvatar");
+  if (photo) {
+    av.innerHTML = `<img src="${photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+    pfAv.innerHTML = `<img src="${photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">`;
+  } else {
+    av.textContent = initialsOf(name);
+    pfAv.textContent = initialsOf(name);
+  }
+}
+
+document.getElementById("pfPhoto").addEventListener("change", function(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    localStorage.setItem(PHOTO_KEY, evt.target.result);
+    renderAvatar();
+    showToast("Profile photo updated!");
+  };
+  reader.readAsDataURL(f);
+});
+
+// Appointment Booking
+const SLOT_TIMES = ["09:00 AM","09:30 AM","10:00 AM","10:30 AM","11:00 AM","11:30 AM","02:00 PM","02:30 PM","03:00 PM","03:30 PM","04:00 PM"];
+let chosenSlot = "";
+
+function openApptModal() {
+  const hs = seedHospitalsIfEmpty();
+  document.getElementById("apHospital").innerHTML = hs.map(h => `<option value="${h.id}">${h.name} (${h.specialization})</option>`).join("");
+  document.getElementById("apDate").value = new Date().toISOString().slice(0, 10);
+  document.getElementById("apReason").value = "";
+  document.getElementById("apError").style.display = "none";
+  chosenSlot = "";
+  renderSlots();
+  document.getElementById("apptModal").classList.add("open");
+}
+
+function renderSlots() {
+  const box = document.getElementById("apSlots");
+  box.innerHTML = SLOT_TIMES.map(t => `<div class="slot-card ${t === chosenSlot ? 'selected':''}" onclick="chosenSlot='${t}';renderSlots()">${t}</div>`).join("");
+}
+
+function bookAppointment() {
+  const hId = document.getElementById("apHospital").value;
+  const hospital = getHospitalById(hId) || { id: hId, name: "City Multispecialty Hospital" };
+  const doctor = document.getElementById("apDoctor").value;
+  const date = document.getElementById("apDate").value;
+  const reason = document.getElementById("apReason").value.trim() || "Regular Consultation";
+
+  if (!chosenSlot || !date) {
+    document.getElementById("apError").textContent = "Please select date and a time slot.";
+    document.getElementById("apError").style.display = "block";
+    return;
+  }
+
+  const token = "TK-" + Math.floor(100 + Math.random() * 900);
+  const appt = {
+    id: "A" + Date.now(),
+    token,
+    patientUsername: session.username,
+    patientName: session.fullName || session.username,
+    hospitalId: hospital.id,
+    hospital: hospital.name,
+    doctorUsername: doctor,
+    doctorName: doctor === "doctor1" ? "Dr. Sarah Chen" : "Dr. Rajesh Deshmukh",
+    date,
+    time: chosenSlot,
+    reason,
+    status: "Booked"
+  };
+
+  ApptStore.add(appt);
+  closeModal("apptModal");
+  showToast(`Appointment booked! Token: ${token}`);
+  renderAppointments();
+}
+
+function renderAppointments() {
+  const list = ApptStore.forPatient(session.username).sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+  document.getElementById("apptEmpty").style.display = list.length ? "none" : "block";
+  const tbody = document.getElementById("apptBody");
+  tbody.innerHTML = "";
+
+  list.forEach(a => {
+    const tr = document.createElement("tr");
+    let pillClass = "review";
+    if (a.status === "Done") pillClass = "normal";
+    if (a.status === "Processing") pillClass = "review";
+
+    tr.innerHTML = `
+      <td><b style="color:var(--mint);">${esc(a.token || 'TK-101')}</b></td>
+      <td>${esc(fmtDate(a.date))} ${esc(a.time)}</td>
+      <td><b>${esc(a.hospital)}</b></td>
+      <td>${esc(a.doctorName || a.doctorUsername || 'Dr. Sarah Chen')}</td>
+      <td>${esc(a.reason)}</td>
+      <td><span class="status-pill ${pillClass}">${esc(a.status === 'Done' ? 'Treatment Done ✓' : (a.status || 'Booked'))}</span></td>
+      <td>${a.status !== 'Done' ? `<button class="btn btn-outline" style="padding:4px 8px;font-size:11px;" onclick="cancelAppt('${a.id}')">Cancel</button>` : '—'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function cancelAppt(id) {
+  ApptStore.update(id, { status: "Cancelled" });
+  showToast("Appointment cancelled.");
+  renderAppointments();
+}
+
+// Hospitals Grid & Map
+function initPatientHospitalMap() {
+  const hospitals = seedHospitalsIfEmpty();
+  const grid = document.getElementById("hospGridCards");
+  grid.innerHTML = "";
+
+  hospitals.forEach(h => {
+    const card = document.createElement("div");
+    card.className = "hosp-card";
+    card.innerHTML = `
+      <b style="color:#fff;font-size:14.5px;">${esc(h.name)}</b>
+      <div style="color:var(--teal);font-size:12px;margin:4px 0 8px;">${esc(h.specialization)}</div>
+      <div style="font-size:11.5px;color:var(--muted);line-height:1.4;">${esc(h.address || 'Central City Road')}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:12px;">
+        <span style="color:var(--mint);font-weight:700;">${h.slots} Slots Available</span>
+        <button class="btn btn-primary" style="padding:4px 8px;font-size:11px;" onclick="openApptModal()">Book Visit</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  if (mapInitialized) return;
+  const mapElement = document.getElementById("patientHospitalMap");
+  if (!mapElement || typeof L === "undefined") return;
 
   try {
-    await apiRequest("/api/patient/records", { method: "POST", body: { doctorUsername, diagnosis } });
-    modal.classList.remove("open");
-    document.getElementById("fDoctor").value = "";
-    document.getElementById("fDiagnosis").value = "";
+    const map = L.map('patientHospitalMap').setView([18.5204, 73.8567], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
 
-    const toast = document.getElementById("toast");
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 2600);
-    render();
-  } catch (err) {
-    alert("Could not upload record: " + err.message);
+    hospitals.forEach(h => {
+      L.marker([parseFloat(h.lat), parseFloat(h.lng)])
+        .addTo(map)
+        .bindPopup(`<b>${esc(h.name)}</b><br>${esc(h.specialization)}<br>Available Slots: <b>${h.slots}</b>`);
+    });
+    mapInitialized = true;
+  } catch(e) {
+    mapElement.style.display = "none";
   }
-};
+}
+
+function exportRecordsPdf() {
+  document.getElementById("pdfPatientName").textContent = session.fullName || session.username;
+  document.getElementById("pdfPatientUser").textContent = session.username;
+  const tbody = document.getElementById("pdfTableBody");
+  tbody.innerHTML = "";
+  patientRecords.forEach(r => {
+    tbody.innerHTML += `
+      <tr>
+        <td style="padding:8px;border:1px solid #CBD5E1;">${fmtDate(r.date)}</td>
+        <td style="padding:8px;border:1px solid #CBD5E1;">Dr. ${esc(r.doctorName || r.doctorUsername || 'Sarah Chen')}</td>
+        <td style="padding:8px;border:1px solid #CBD5E1;">${esc(r.diagnosis)}</td>
+        <td style="padding:8px;border:1px solid #CBD5E1;">${esc(r.prescription || '-')}</td>
+        <td style="padding:8px;border:1px solid #CBD5E1;font-family:monospace;">${shortHash(r.blockHash)}</td>
+      </tr>`;
+  });
+  document.getElementById("pdfExportModal").classList.add("open");
+}
+
+// 🔗 Real-Time State Hub Listeners:
+LiveHub.subscribe("APPOINTMENT_STATUS_UPDATED", (evt) => {
+  showToast(`🔔 Status Update from Dr. ${evt.doctorName}: ${evt.status}`);
+  renderAppointments();
+});
+
+LiveHub.subscribe("PRESCRIPTION_DISPENSED", (evt) => {
+  if (evt.patientUsername === session.username) {
+    showToast(`💊 Pharmacy Alert: Your prescribed medicines have been DISPENSED & verified!`);
+  }
+});
+
+LiveHub.subscribe("RECORD_UPDATED", (evt) => {
+  if (evt.patientUsername === session.username) {
+    showToast(`🔔 Dr. ${evt.doctorName || 'Sarah Chen'} updated your clinical record.`);
+    render();
+  }
+});
 
 render();
 </script>

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hospital Admin Operations Hub — MedChain</title>
+<link rel="stylesheet" href="dashboard-shared.css">
+<style>
+.bed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-top:14px;}
+.bed-card{border-radius:12px;padding:14px;border:1px solid;position:relative;transition:all 0.2s ease;}
+.bed-vacant{background:rgba(0,255,240,0.04);border-color:rgba(0,255,240,0.3);}
+.bed-occupied{background:rgba(239,68,68,0.06);border-color:rgba(239,68,68,0.4);}
+.bed-status{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;}
+.dot-vacant{background:var(--mint);box-shadow:0 0 8px var(--mint);}
+.dot-occupied{background:var(--coral);box-shadow:0 0 8px var(--coral);}
+.roster-card{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);margin-bottom:8px;}
+.bill-summary{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:18px;margin-top:14px;}
+.bill-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13.5px;}
+.bill-total{display:flex;justify-content:space-between;padding:12px 0 0;font-size:17px;font-weight:800;color:var(--mint);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="mark"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+      <div><div class="name">MedChain</div><div class="sub">Hospital Operations</div></div>
+    </div>
+
+    <a class="nav-item active" onclick="goTo('bedGridCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/></svg> Emergency Bed Grid</a>
+    <a class="nav-item" onclick="goTo('checkinCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Check-In &amp; Token Desk</a>
+    <a class="nav-item" onclick="goTo('refCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg> Doctor Referrals</a>
+    <a class="nav-item" onclick="goTo('billingCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg> Central Billing &amp; Discharge</a>
+
+    <div class="sidebar-footer">
+      <span class="role-pill">Hospital Admin</span>
+      <a class="nav-item" href="#" onclick="logout(); return false;">Log Out</a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="title" id="hName">City Multispecialty Hospital</div>
+        <div class="subtitle" id="hSub">Central reception check-in, live emergency bed grid &amp; integrated hospital billing</div>
+      </div>
+      <div class="topbar-right">
+        <div class="profile-chip">
+          <div class="avatar" style="background:var(--amber);color:#0B192C;">🏥</div>
+          <div class="who"><b id="hLogin">Admin Desk</b>Operations Administrator</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAT ROW -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="label">Total Beds Occupied</div>
+        <div class="value" id="sBedCount" style="color:var(--coral);">0 / 8</div>
+        <div class="delta">Emergency &amp; General Wards</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Pending Doctor Referrals</div>
+        <div class="value" id="sRef" style="color:var(--amber);">0</div>
+        <div class="delta">Awaiting Bed Assignment</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Reception Queue Today</div>
+        <div class="value" id="sQueueToday" style="color:var(--mint);">0</div>
+        <div class="delta">Tokens generated today</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Settled Billing (INR)</div>
+        <div class="value" id="sRevenue">₹0</div>
+        <div class="delta">Pharmacy + Clinical Charges</div>
+      </div>
+    </div>
+
+    <!-- 1. LIVE EMERGENCY BED GRID -->
+    <div class="card" id="bedGridCard">
+      <div class="card-head">
+        <div>
+          <h3>Live Emergency Bed &amp; Resource Grid</h3>
+          <div class="hint">Real-time status of Emergency ICU, Cardiac and General Wards (Red = Occupied, Green = Vacant)</div>
+        </div>
+        <button class="btn btn-outline" onclick="openAssignBedModal()">＋ Admit Patient to Bed</button>
+      </div>
+      <div class="bed-grid" id="bedGridContainer"></div>
+    </div>
+
+    <!-- 2. CENTRAL CHECK-IN & TOKEN GENERATION -->
+    <div class="card" id="checkinCard">
+      <div class="card-head">
+        <div>
+          <h3>Central Check-In &amp; Token Generator</h3>
+          <div class="hint">Checking-in generates a digital token and automatically pushes the patient into the Doctor's active consultation queue</div>
+        </div>
+        <button class="btn btn-primary" onclick="openNewTokenModal()">⚡ Walk-In Quick Token</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Token ID</th>
+            <th>Patient Name</th>
+            <th>Consulting Doctor</th>
+            <th>Time Slot</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="queueBody"></tbody>
+      </table>
+      <div id="queueEmpty" style="display:none;color:var(--muted);padding:20px;text-align:center;">No patients currently in reception queue.</div>
+    </div>
+
+    <!-- 3. DOCTOR REFERRALS (Admit alerts from doctors) -->
+    <div class="card" id="refCard">
+      <div class="card-head">
+        <div>
+          <h3>Doctor Referrals &amp; Inpatient Admit Requests</h3>
+          <div class="hint">Specialist referrals submitted live by attending doctors</div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th>Referring Doctor</th>
+            <th>Medical Reason</th>
+            <th>Urgency</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="refBody"></tbody>
+      </table>
+      <div id="refEmpty" style="display:none;color:var(--muted);padding:16px 0;text-align:center;">No incoming doctor referrals.</div>
+    </div>
+
+    <!-- 4. CENTRAL BILLING & DISCHARGE SETTLEMENT -->
+    <div class="card" id="billingCard">
+      <div class="card-head">
+        <div>
+          <h3>Master Billing &amp; Patient Discharge Terminal</h3>
+          <div class="hint">Automatically aggregates consultation fees, room rent, and Pharmacy dispensed drug bills</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <h4 style="margin-bottom:10px;">Select Admitted Patient for Discharge</h4>
+          <select id="billPatientSelect" onchange="loadPatientBill(this.value)" style="width:100%;padding:10px;border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;border:1px solid rgba(255,255,255,0.15);">
+            <option value="">-- Select Patient --</option>
+          </select>
+          <div id="billDetailsArea" style="display:none;" class="bill-summary">
+            <h4 style="color:var(--teal);margin-bottom:10px;" id="billPatientTitle">Patient Statement</h4>
+            <div id="billItemsList"></div>
+            <div class="bill-total">
+              <span>Total Settlement:</span>
+              <span id="billGrandTotal">₹0</span>
+            </div>
+            <div style="margin-top:16px;display:flex;gap:10px;">
+              <button class="btn btn-primary" onclick="settleAndDischarge()">💳 Settle Bill &amp; Finalize Discharge</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="margin-bottom:10px;">Recent Settled Invoices</h4>
+          <table>
+            <thead>
+              <tr><th>Invoice</th><th>Patient</th><th>Amount</th><th>Discharged At</th></tr>
+            </thead>
+            <tbody id="settledInvoicesBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal: Assign Bed -->
+<div class="modal-overlay" id="bedModal">
+  <div class="modal">
+    <h3>Admit Patient to Emergency Bed</h3>
+    <div class="modal-sub">Assigns an active bed and logs admission timestamp.</div>
+    <div class="field"><label>Patient Full Name</label><input id="bPatientName" placeholder="e.g. Rahul Sharma"></div>
+    <div class="field"><label>Select Available Bed</label><select id="bBedSelect"></select></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('bedModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmBedAdmission()">Confirm Admission</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Walk-in Token -->
+<div class="modal-overlay" id="tokenModal">
+  <div class="modal">
+    <h3>Generate Walk-In Reception Token</h3>
+    <div class="modal-sub">Patient is pushed immediately to the doctor's consultation queue.</div>
+    <div class="field"><label>Patient Name</label><input id="tPatientName" placeholder="e.g. Anand Kumar"></div>
+    <div class="field"><label>Assign Doctor</label>
+      <select id="tDoctorSelect">
+        <option value="doctor1">Dr. Sarah Chen (General Medicine)</option>
+        <option value="doctor2">Dr. Rajesh Deshmukh (Cardiology)</option>
+      </select>
+    </div>
+    <div class="field"><label>Chief Complaint / Symptoms</label><input id="tSymptoms" placeholder="e.g. Severe headache &amp; fever"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('tokenModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmGenerateToken()">Generate Token &amp; Push to Doctor →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg">Action completed</span></div>
+
+<script src="auth-guard.js"></script>
+<script src="api-client.js"></script>
+<script src="hospital-engine.js"></script>
+<script src="appointment-engine.js"></script>
+<script src="live-hub.js"></script>
+<script>
+const session = requireRole("HOSPITAL");
+const HID = localStorage.getItem("mc_hospital_id") || "H001";
+
+function goTo(id) { document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
+function showToast(m) { const t = document.getElementById("toast"); document.getElementById("toastMsg").textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2800); }
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function fmtDate(d) { const x = new Date(d); return isNaN(x) ? "—" : x.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }); }
+
+function render() {
+  const h = getHospitalById(HID) || { name: session.fullName || "City Multispecialty Hospital", specialization: "Cardiology" };
+  document.getElementById("hName").textContent = h.name;
+  document.getElementById("hLogin").textContent = session.username;
+
+  renderBeds();
+  renderCheckinQueue();
+  renderReferrals();
+  populateBillPatientDropdown();
+  renderSettledInvoices();
+}
+
+// 1. LIVE BED GRID
+function renderBeds() {
+  const beds = MedChainLiveHub.getHospitalBeds(HID);
+  const container = document.getElementById("bedGridContainer");
+  container.innerHTML = "";
+
+  const occupied = beds.filter(b => b.occupied);
+  document.getElementById("sBedCount").textContent = `${occupied.length} / ${beds.length}`;
+
+  beds.forEach((bed) => {
+    const card = document.createElement("div");
+    card.className = `bed-card ${bed.occupied ? 'bed-occupied' : 'bed-vacant'}`;
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <b style="font-size:15px;color:#fff;">${bed.id}</b>
+        <span style="font-size:11px;font-weight:700;color:${bed.occupied ? 'var(--coral)' : 'var(--mint)'};">
+          <span class="bed-status ${bed.occupied ? 'dot-occupied' : 'dot-vacant'}"></span>${bed.occupied ? 'OCCUPIED' : 'VACANT'}
+        </span>
+      </div>
+      <div style="font-size:11.5px;color:var(--muted);">${bed.ward}</div>
+      ${bed.occupied ? `
+        <div style="margin-top:8px;font-size:12.5px;color:#fff;">
+          <b>${esc(bed.patientName)}</b>
+          <div style="font-size:11px;color:var(--amber);">Token: ${esc(bed.token || '-')} · Admitted: ${esc(bed.admitTime || '-')}</div>
+        </div>
+        <button class="btn btn-outline" style="margin-top:10px;padding:4px 8px;font-size:11px;width:100%;color:var(--coral);" onclick="dischargeBed('${bed.id}')">Free Bed / Discharge</button>
+      ` : `
+        <div style="margin-top:14px;color:var(--muted);font-size:11.5px;">Ready for triage</div>
+        <button class="btn btn-ghost" style="margin-top:8px;padding:4px 8px;font-size:11px;width:100%;" onclick="openAssignBedModal('${bed.id}')">Assign Bed →</button>
+      `}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function openAssignBedModal(preselectedBedId) {
+  const beds = MedChainLiveHub.getHospitalBeds(HID).filter(b => !b.occupied);
+  const sel = document.getElementById("bBedSelect");
+  sel.innerHTML = beds.map(b => `<option value="${b.id}" ${b.id === preselectedBedId ? 'selected':''}>${b.id} — ${b.ward}</option>`).join("");
+  document.getElementById("bPatientName").value = "";
+  document.getElementById("bedModal").classList.add("open");
+}
+
+function confirmBedAdmission() {
+  const name = document.getElementById("bPatientName").value.trim();
+  const bedId = document.getElementById("bBedSelect").value;
+  if (!name || !bedId) { showToast("Please enter patient name and select a bed."); return; }
+
+  const beds = MedChainLiveHub.getHospitalBeds(HID);
+  const target = beds.find(b => b.id === bedId);
+  if (target) {
+    target.occupied = true;
+    target.patientName = name;
+    target.token = "TK-" + Math.floor(100 + Math.random() * 900);
+    target.admitTime = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+    MedChainLiveHub.setHospitalBeds(HID, beds);
+    showToast(`Patient ${name} admitted to Bed ${bedId}!`);
+  }
+  closeModal("bedModal");
+  renderBeds();
+}
+
+function dischargeBed(bedId) {
+  const beds = MedChainLiveHub.getHospitalBeds(HID);
+  const target = beds.find(b => b.id === bedId);
+  if (target) {
+    target.occupied = false;
+    target.patientName = null;
+    target.token = null;
+    target.admitTime = null;
+    MedChainLiveHub.setHospitalBeds(HID, beds);
+    showToast(`Bed ${bedId} has been sanitized and marked VACANT.`);
+    renderBeds();
+  }
+}
+
+// 2. CHECK-IN QUEUE
+function renderCheckinQueue() {
+  const appts = ApptStore.all().filter(a => a.hospitalId === HID || !a.hospitalId);
+  document.getElementById("sQueueToday").textContent = appts.length;
+  const tbody = document.getElementById("queueBody");
+  const empty = document.getElementById("queueEmpty");
+  tbody.innerHTML = "";
+
+  if (!appts.length) {
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  appts.forEach((a) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b style="color:var(--mint);">${esc(a.token || 'TK-' + a.id.slice(-3))}</b></td>
+      <td><b>${esc(a.patientName)}</b><br><code style="font-size:11px;">${esc(a.patientUsername)}</code></td>
+      <td>Dr. ${esc(a.doctorName || a.doctorUsername || 'Sarah Chen')}</td>
+      <td>${esc(fmtDate(a.date))} ${esc(a.time)}</td>
+      <td>${esc(a.reason)}</td>
+      <td><span class="status-pill ${a.checkedIn ? 'normal' : 'review'}">${a.checkedIn ? 'Checked-In ✓' : (a.status || 'Pending')}</span></td>
+      <td>
+        ${!a.checkedIn ? `<button class="btn btn-primary" style="padding:5px 10px;font-size:11.5px;" onclick="checkInPatient('${esc(a.id)}')">Check-In &amp; Push to Doctor →</button>` : `<span style="color:var(--muted);font-size:12px;">In Doctor Queue</span>`}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function checkInPatient(id) {
+  const token = "TK-" + Math.floor(100 + Math.random() * 900);
+  ApptStore.update(id, { checkedIn: true, token, status: "CheckedIn" });
+  
+  const a = ApptStore.all().find(x => x.id === id);
+  // 🔗 Interconnection: Push live event to Doctor's Queue
+  LiveHub.publish("PATIENT_CHECKED_IN", {
+    appointmentId: id,
+    token,
+    patientName: a?.patientName,
+    patientUsername: a?.patientUsername,
+    doctorUsername: a?.doctorUsername || "doctor1"
+  });
+
+  showToast(`Patient checked in! Token ${token} generated and pushed to Doctor.`);
+  renderCheckinQueue();
+}
+
+function openNewTokenModal() {
+  document.getElementById("tPatientName").value = "";
+  document.getElementById("tSymptoms").value = "";
+  document.getElementById("tokenModal").classList.add("open");
+}
+
+function confirmGenerateToken() {
+  const name = document.getElementById("tPatientName").value.trim();
+  const doctor = document.getElementById("tDoctorSelect").value;
+  const reason = document.getElementById("tSymptoms").value.trim() || "Walk-in Consultation";
+  if (!name) { showToast("Please enter patient name."); return; }
+
+  const token = "TK-" + Math.floor(100 + Math.random() * 900);
+  const newAppt = {
+    id: "A" + Date.now(),
+    token,
+    patientUsername: name.toLowerCase().replace(/\s/g, ""),
+    patientName: name,
+    hospitalId: HID,
+    doctorUsername: doctor,
+    doctorName: doctor === "doctor1" ? "Sarah Chen" : "Rajesh Deshmukh",
+    date: new Date().toISOString().slice(0, 10),
+    time: new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }),
+    reason,
+    checkedIn: true,
+    status: "CheckedIn"
+  };
+
+  ApptStore.add(newAppt);
+
+  // 🔗 Push live to Doctor
+  LiveHub.publish("PATIENT_CHECKED_IN", {
+    appointmentId: newAppt.id,
+    token,
+    patientName: name,
+    doctorUsername: doctor
+  });
+
+  closeModal("tokenModal");
+  showToast(`Walk-In Token ${token} generated & assigned to Dr. Sarah Chen!`);
+  renderCheckinQueue();
+}
+
+// 3. REFERRALS
+function renderReferrals() {
+  const refs = JSON.parse(localStorage.getItem("medchain_referrals_v1") || "[]");
+  const filtered = refs.filter(r => r.hospitalId === HID || r.hospitalName?.includes("Multispecialty"));
+  document.getElementById("sRef").textContent = filtered.filter(r => r.status === "Pending").length;
+
+  const tbody = document.getElementById("refBody");
+  const empty = document.getElementById("refEmpty");
+  tbody.innerHTML = "";
+
+  if (!filtered.length) { empty.style.display = "block"; return; }
+  empty.style.display = "none";
+
+  filtered.slice().reverse().forEach((r, idx) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${esc(r.patientName)}</b></td>
+      <td>Dr. ${esc(r.doctorName || r.doctorUsername)}</td>
+      <td>${esc(r.reason)}</td>
+      <td><span style="color:var(--coral);font-weight:700;">${esc(r.urgency || "Emergency Admit")}</span></td>
+      <td><span class="status-pill ${r.status === 'Accepted' ? 'normal' : 'review'}">${esc(r.status || 'Pending')}</span></td>
+      <td>
+        ${r.status === 'Pending' ? `
+          <button class="btn btn-primary" style="padding:4px 8px;font-size:11px;" onclick="acceptReferralAndAdmit('${esc(r.patientName)}')">✓ Admit to Bed</button>
+        ` : `<span style="color:var(--mint);font-size:12px;">Admitted ✓</span>`}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function acceptReferralAndAdmit(patientName) {
+  openAssignBedModal();
+  document.getElementById("bPatientName").value = patientName;
+}
+
+// 4. BILLING & DISCHARGE TERMINAL
+function populateBillPatientDropdown() {
+  const beds = MedChainLiveHub.getHospitalBeds(HID).filter(b => b.occupied);
+  const sel = document.getElementById("billPatientSelect");
+  sel.innerHTML = '<option value="">-- Select Patient --</option>' + beds.map(b => `<option value="${esc(b.patientName)}">${esc(b.patientName)} (Bed: ${b.id})</option>`).join("");
+}
+
+let activeBillTotal = 0;
+let activePatientName = null;
+
+function loadPatientBill(name) {
+  if (!name) { document.getElementById("billDetailsArea").style.display = "none"; return; }
+  activePatientName = name;
+  document.getElementById("billPatientTitle").textContent = "Discharge Invoice: " + name;
+
+  // Retrieve any pharmacy bills created for this patient via LiveHub
+  const pharmacyLedger = JSON.parse(localStorage.getItem("medchain_dispense_ledger_v1") || "[]");
+  const patientMeds = pharmacyLedger.filter(l => l.patientName?.toLowerCase() === name.toLowerCase() || l.patientUsername?.toLowerCase() === name.toLowerCase());
+
+  const list = document.getElementById("billItemsList");
+  list.innerHTML = "";
+  let total = 850; // Base Room rent & nursing charge
+
+  list.innerHTML += `<div class="bill-row"><span>Emergency Room &amp; Nursing Care</span><b>₹850</b></div>`;
+  list.innerHTML += `<div class="bill-row"><span>Consultation Fee (Dr. Sarah Chen)</span><b>₹500</b></div>`;
+  total += 500;
+
+  patientMeds.forEach(m => {
+    list.innerHTML += `<div class="bill-row"><span>Pharmacy: ${esc(m.prescription.slice(0, 30))}...</span><b>₹${m.cost}</b></div>`;
+    total += m.cost;
+  });
+
+  activeBillTotal = total;
+  document.getElementById("billGrandTotal").textContent = "₹" + total;
+  document.getElementById("billDetailsArea").style.display = "block";
+}
+
+function settleAndDischarge() {
+  if (!activePatientName) return;
+
+  const settled = JSON.parse(localStorage.getItem("medchain_settled_invoices_v1") || "[]");
+  settled.unshift({
+    invId: "INV-" + Math.floor(1000 + Math.random() * 9000),
+    patientName: activePatientName,
+    amount: activeBillTotal,
+    date: new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })
+  });
+  localStorage.setItem("medchain_settled_invoices_v1", JSON.stringify(settled));
+
+  // Free Bed
+  const beds = MedChainLiveHub.getHospitalBeds(HID);
+  const target = beds.find(b => b.patientName === activePatientName);
+  if (target) {
+    target.occupied = false;
+    target.patientName = null;
+    target.token = null;
+    MedChainLiveHub.setHospitalBeds(HID, beds);
+  }
+
+  showToast(`Bill settled for ${activePatientName}. Patient successfully discharged!`);
+  document.getElementById("billDetailsArea").style.display = "none";
+  render();
+}
+
+function renderSettledInvoices() {
+  const settled = JSON.parse(localStorage.getItem("medchain_settled_invoices_v1") || "[]");
+  let sum = 0;
+  settled.forEach(s => sum += s.amount);
+  document.getElementById("sRevenue").textContent = "₹" + sum;
+
+  const tbody = document.getElementById("settledInvoicesBody");
+  tbody.innerHTML = "";
+  settled.slice(0, 5).forEach(s => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td><code>${s.invId}</code></td><td><b>${esc(s.patientName)}</b></td><td><b>₹${s.amount}</b></td><td>${s.date}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// Listen to Doctor Referrals / Admit Requests in Real Time
+LiveHub.subscribe("HOSPITAL_ADMIT_REQUESTED", (evt) => {
+  showToast(`🚨 URGENT REFERRAL: Dr. ${evt.doctorName} referred ${evt.patientName} for admission!`);
+  renderReferrals();
+});
+
+render();
+</script>
+</body>
+</html>

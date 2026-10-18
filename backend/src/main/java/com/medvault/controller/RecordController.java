@@ -32,6 +32,32 @@ public class RecordController {
         return s;
     }
 
+    // --- Patient Profile ---
+
+    @GetMapping("/patient/profile")
+    public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String auth) {
+        Session s = requireSession(auth);
+        AppUser user = userRepository.findByUsername(s.username()).orElse(null);
+        if (user == null) return ResponseEntity.status(404).body("User not found");
+        return ResponseEntity.ok(user);
+    }
+
+    @PutMapping("/patient/profile")
+    public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String auth, @RequestBody Map<String, Object> body) {
+        Session s = requireSession(auth);
+        AppUser user = userRepository.findByUsername(s.username()).orElse(null);
+        if (user == null) return ResponseEntity.status(404).body("User not found");
+
+        if (body.containsKey("bloodGroup")) user.setBloodGroup((String) body.get("bloodGroup"));
+        if (body.containsKey("allergies")) user.setAllergies((String) body.get("allergies"));
+        if (body.containsKey("chronicConditions")) user.setChronicConditions((String) body.get("chronicConditions"));
+        if (body.containsKey("emergencyContact")) user.setEmergencyContact((String) body.get("emergencyContact"));
+        if (body.containsKey("age") && body.get("age") != null) user.setAge(Integer.parseInt(body.get("age").toString()));
+        if (body.containsKey("weight") && body.get("weight") != null) user.setWeight(Double.parseDouble(body.get("weight").toString()));
+
+        return ResponseEntity.ok(userRepository.save(user));
+    }
+
     // --- Patient: view own records, upload a new one ---
 
     @GetMapping("/patient/records")
@@ -44,7 +70,16 @@ public class RecordController {
     public ResponseEntity<?> uploadRecord(@RequestHeader("Authorization") String auth, @RequestBody Map<String, String> body) {
         Session s = requireSession(auth);
         String doctorUsername = body.getOrDefault("doctorUsername", "doctor1");
-        MedicalRecord record = recordService.createRecord(s.username(), doctorUsername, body.get("diagnosis"));
+        MedicalRecord record = recordService.createRecord(
+                s.username(),
+                doctorUsername,
+                body.get("diagnosis"),
+                body.get("prescription"),
+                body.get("attachmentData"),
+                body.get("attachmentName"),
+                body.get("attachmentType"),
+                body.get("status")
+        );
         return ResponseEntity.ok(record);
     }
 
@@ -59,7 +94,7 @@ public class RecordController {
     @GetMapping("/doctor/patients")
     public ResponseEntity<?> patients(@RequestHeader("Authorization") String auth) {
         requireSession(auth);
-        List<AppUser> patients = userRepository.findByRole("Patient");
+        List<AppUser> patients = userRepository.findByRoleIgnoreCase("Patient");
         return ResponseEntity.ok(patients);
     }
 
@@ -68,7 +103,15 @@ public class RecordController {
                                               @PathVariable Long id,
                                               @RequestBody Map<String, String> body) {
         requireSession(auth);
-        return ResponseEntity.ok(recordService.updateDiagnosis(id, body.get("diagnosis")));
+        return ResponseEntity.ok(recordService.updateRecord(
+                id,
+                body.get("diagnosis"),
+                body.get("prescription"),
+                body.get("attachmentData"),
+                body.get("attachmentName"),
+                body.get("attachmentType"),
+                body.get("status")
+        ));
     }
 
     // --- Admin: view everything, verify chain integrity ---

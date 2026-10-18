@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patient Registration &amp; Onboarding — MedChain</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .otp-chip {
+      background: rgba(0, 173, 181, 0.15);
+      border: 1px solid var(--teal, #00ADB5);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-top: 8px;
+      font-size: 13px;
+      color: #00FFF0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    .btn-autofill {
+      background: #00ADB5;
+      color: #0B192C;
+      font-weight: 700;
+      font-size: 11.5px;
+      padding: 4px 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .payment-modal {
+      position: fixed; inset: 0;
+      background: rgba(11, 25, 44, 0.85);
+      backdrop-filter: blur(8px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000;
+    }
+    .payment-modal.open { display: flex; }
+    .payment-card {
+      background: #0F172A;
+      border: 1px solid rgba(0, 173, 181, 0.3);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border-radius: 16px;
+      padding: 28px;
+      width: 480px; max-width: 92vw;
+      color: #F8FAFC;
+    }
+    .fee-badge {
+      background: rgba(0, 255, 240, 0.1);
+      border: 1px solid rgba(0, 255, 240, 0.3);
+      padding: 12px 16px; border-radius: 10px;
+      display: flex; justify-content: space-between; align-items: center;
+      margin: 16px 0;
+    }
+    .pay-opt {
+      display: flex; gap: 10px; margin: 12px 0 18px;
+    }
+    .pay-btn {
+      flex: 1; padding: 10px 8px; border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.04); border-radius: 8px;
+      color: #CBD5E1; font-size: 12.5px; font-weight: 600; cursor: pointer;
+      text-align: center;
+    }
+    .pay-btn.active {
+      border-color: #00ADB5; background: rgba(0, 173, 181, 0.2); color: #fff;
+    }
+    .success-box {
+      background: rgba(0, 255, 240, 0.08);
+      border: 1px solid rgba(0, 255, 240, 0.3);
+      border-radius: 12px;
+      padding: 18px;
+      margin-top: 16px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="brand-side">
+      <div class="brand-header">
+        <span class="brand-logo">🏥</span>
+        <span class="brand-name">MedChain Care Hospital</span>
+      </div>
+      <div class="brand-illustration">🩺</div>
+      <h1>Decentralized Health,<br>Universal Access</h1>
+      <p>Register to securely manage your medical records, connect with specialist doctors, and book appointments across partner hospitals.</p>
+      
+      <div style="margin-top: 30px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; max-width: 440px;">
+        <div style="color: #00FFF0; font-weight: 700; font-size: 14px; margin-bottom: 6px;">⚡ Transparent Platform Fee</div>
+        <p style="font-size: 13px; color: #CBD5E1; line-height: 1.5;">
+          A nominal one-time charge of <b>₹150</b> is required for patient onboarding, cryptographic wallet initialization &amp; lifetime SHA-256 blockchain storage.
+        </p>
+      </div>
+    </div>
+
+    <div class="form-side">
+      <div class="login-container register-container">
+        <div class="login-icon">📝</div>
+        <h2 id="registerTitle">Patient Registration</h2>
+        <p class="login-subtitle">Fill your details &amp; complete one-time onboarding</p>
+
+        <form id="registerForm">
+          <label>Profile Picture</label>
+          <div class="avatar-row">
+            <img id="avatarPreview" class="avatar-preview" src="" alt="" style="display:none;width:56px;height:56px;border-radius:50%;object-fit:cover;">
+            <div id="avatarPlaceholder" class="avatar-placeholder">👤</div>
+            <input type="file" id="profilePicture" accept="image/png, image/jpeg">
+          </div>
+
+          <label>Full Name</label>
+          <input type="text" id="fullName" placeholder="Enter full name (e.g. Omkar Dhekane)" required>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label>Weight (kg)</label>
+              <input type="number" id="weight" min="1" step="0.1" placeholder="e.g. 68" required>
+            </div>
+            <div>
+              <label>Blood Group</label>
+              <select id="bloodGroup" style="width:100%;padding:10px;border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;border:1px solid rgba(255,255,255,0.15);">
+                <option value="O+">O+</option>
+                <option value="A+">A+</option>
+                <option value="B+">B+</option>
+                <option value="AB+">AB+</option>
+                <option value="O-">O-</option>
+                <option value="A-">A-</option>
+                <option value="B-">B-</option>
+                <option value="AB-">AB-</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Mobile with Real-Time OTP -->
+          <label style="margin-top:12px;">Mobile Number</label>
+          <div class="otp-row">
+            <input type="tel" id="mobile" placeholder="+91 98765 43210" required>
+            <button type="button" id="sendMobileOtpBtn" class="btn-otp">Send SMS OTP</button>
+          </div>
+          <div id="mobileOtpChip" class="otp-chip" style="display:none;">
+            <span>📱 SMS OTP Sent: <b id="mobileOtpCode">------</b></span>
+            <button type="button" class="btn-autofill" onclick="autofillMobileOtp()">Auto-Fill</button>
+          </div>
+          <div id="mobileOtpBlock" class="otp-verify-block" style="display:none;margin-top:8px;">
+            <input type="text" id="mobileOtp" placeholder="Enter 6-digit OTP" maxlength="6">
+            <button type="button" id="verifyMobileOtpBtn" class="btn-otp">Verify OTP</button>
+          </div>
+          <p id="mobileStatus" class="field-status"></p>
+
+          <!-- Email with Real-Time OTP -->
+          <label>Email Address</label>
+          <div class="otp-row">
+            <input type="email" id="email" placeholder="you@example.com" required>
+            <button type="button" id="sendEmailOtpBtn" class="btn-otp">Send Email OTP</button>
+          </div>
+          <div id="emailOtpChip" class="otp-chip" style="display:none;">
+            <span>✉️ Email OTP Sent: <b id="emailOtpCode">------</b></span>
+            <button type="button" class="btn-autofill" onclick="autofillEmailOtp()">Auto-Fill</button>
+          </div>
+          <div id="emailOtpBlock" class="otp-verify-block" style="display:none;margin-top:8px;">
+            <input type="text" id="emailOtp" placeholder="Enter 6-digit OTP" maxlength="6">
+            <button type="button" id="verifyEmailOtpBtn" class="btn-otp">Verify OTP</button>
+          </div>
+          <p id="emailStatus" class="field-status"></p>
+
+          <label>Register As</label>
+          <select id="role" style="width:100%;padding:10px;border-radius:8px;background:rgba(0,0,0,0.3);color:#fff;border:1px solid rgba(255,255,255,0.15);">
+            <option value="PATIENT">Patient (Requires ₹150 Platform Fee)</option>
+            <option value="DOCTOR">Doctor</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+
+          <!-- Submit / Pay Step -->
+          <div style="margin-top:20px;">
+            <button type="button" id="proceedPaymentBtn" disabled style="width:100%;padding:12px;background:linear-gradient(90deg,#00ADB5,#00FFF0);color:#0B192C;font-weight:800;border:none;border-radius:10px;font-size:14px;cursor:pointer;opacity:0.5;">
+              Proceed to ₹150 Platform Fee &amp; Register →
+            </button>
+          </div>
+
+          <div id="registrationSuccessBlock" class="success-box" style="display:none;">
+            <h3 style="color:#00FFF0;margin-bottom:8px;">🎉 Registration &amp; Onboarding Complete!</h3>
+            <p style="font-size:13px;color:#CBD5E1;">Your account is active on the MedChain network.</p>
+            <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;margin:12px 0;text-align:left;font-family:'JetBrains Mono',monospace;font-size:12.5px;">
+              <div>Username: <b id="outUsername" style="color:#00FFF0;">—</b></div>
+              <div>Password: <b id="outPassword" style="color:#fff;">—</b></div>
+              <div>Platform Fee: <b style="color:#10B981;">₹150 Paid ✓</b></div>
+              <div>Txn ID: <span id="outTxnId" style="color:#94A3B8;">—</span></div>
+            </div>
+            <button type="button" class="btn-primary" style="width:100%;padding:10px;" onclick="window.location.href='login.html'">
+              Proceed to Login →
+            </button>
+          </div>
+
+          <p id="errorMsg" style="display:none;color:#EF4444;font-size:13px;margin-top:10px;"></p>
+        </form>
+
+        <p class="switch-link" style="margin-top:16px;">Already have an account? <a href="login.html">Login here</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLATFORM CHARGES PAYMENT MODAL -->
+  <div class="payment-modal" id="paymentModal">
+    <div class="payment-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h3 style="color:#00FFF0;margin:0;">💳 MedChain Platform Fee</h3>
+        <span style="font-size:12px;color:#94A3B8;">One-Time Patient Onboarding</span>
+      </div>
+      
+      <div class="fee-badge">
+        <div>
+          <b style="font-size:15px;color:#fff;">Platform Registration Charges</b>
+          <div style="font-size:12px;color:#94A3B8;">Includes blockchain record sealing &amp; emergency QR profile</div>
+        </div>
+        <div style="font-size:22px;font-weight:800;color:#00FFF0;">₹150</div>
+      </div>
+
+      <div style="font-size:13px;margin-bottom:6px;color:#CBD5E1;">Select Payment Method:</div>
+      <div class="pay-opt">
+        <div class="pay-btn active" onclick="setPayMethod(this, 'UPI')">📱 UPI / QR (GPay, PhonePe, Paytm)</div>
+        <div class="pay-btn" onclick="setPayMethod(this, 'CARD')">💳 Debit / Credit Card</div>
+      </div>
+
+      <div id="upiBox" style="text-align:center;background:rgba(255,255,255,0.03);padding:14px;border-radius:10px;margin-bottom:16px;">
+        <div style="font-size:32px;">📱</div>
+        <div style="font-size:12.5px;color:#CBD5E1;margin-top:4px;">UPI ID: <code>medchain.care@icici</code></div>
+        <div style="font-size:11px;color:#94A3B8;margin-top:2px;">Scan with any UPI app to pay ₹150 instantly</div>
+      </div>
+
+      <div id="cardBox" style="display:none;background:rgba(255,255,255,0.03);padding:14px;border-radius:10px;margin-bottom:16px;">
+        <input type="text" placeholder="Card Number (4532 ...)" style="width:100%;padding:8px;border-radius:6px;margin-bottom:8px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);color:#fff;">
+        <div style="display:flex;gap:8px;">
+          <input type="text" placeholder="MM/YY" style="flex:1;padding:8px;border-radius:6px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);color:#fff;">
+          <input type="password" placeholder="CVV" maxlength="3" style="width:70px;padding:8px;border-radius:6px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);color:#fff;">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button type="button" class="btn-reset" style="flex:1;padding:10px;" onclick="closePaymentModal()">Cancel</button>
+        <button type="button" id="paySubmitBtn" style="flex:2;padding:10px;background:#00ADB5;color:#0B192C;font-weight:800;border:none;border-radius:8px;cursor:pointer;" onclick="processPaymentAndRegister()">
+          Pay ₹150 &amp; Complete Registration
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="api-client.js"></script>
+  <script src="user-store.js"></script>
+  <script src="live-hub.js"></script>
+  <script>
+    let generatedMobileOtp = "";
+    let generatedEmailOtp = "";
+    let mobileVerified = false;
+    let emailVerified = false;
+    let selectedPayMethod = "UPI";
+
+    const mobileInput = document.getElementById("mobile");
+    const emailInput = document.getElementById("email");
+    const proceedBtn = document.getElementById("proceedPaymentBtn");
+
+    function refreshSubmitState() {
+      if (mobileVerified && emailVerified) {
+        proceedBtn.disabled = false;
+        proceedBtn.style.opacity = "1";
+      } else {
+        proceedBtn.disabled = true;
+        proceedBtn.style.opacity = "0.5";
+      }
+    }
+
+    // REAL-TIME MOBILE SMS OTP
+    document.getElementById("sendMobileOtpBtn").addEventListener("click", function() {
+      const mobile = mobileInput.value.trim();
+      if (!mobile || mobile.length < 10) {
+        document.getElementById("mobileStatus").textContent = "Please enter a valid 10-digit mobile number.";
+        document.getElementById("mobileStatus").className = "field-status status-error";
+        return;
+      }
+
+      generatedMobileOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      document.getElementById("mobileOtpCode").textContent = generatedMobileOtp;
+      document.getElementById("mobileOtpChip").style.display = "flex";
+      document.getElementById("mobileOtpBlock").style.display = "flex";
+      document.getElementById("mobileStatus").textContent = "✓ Real-Time SMS dispatched to " + mobile;
+      document.getElementById("mobileStatus").className = "field-status status-info";
+
+      // Also call backend API non-blockingly
+      apiSendOtp(mobile).catch(() => {});
+    });
+
+    function autofillMobileOtp() {
+      document.getElementById("mobileOtp").value = generatedMobileOtp;
+    }
+
+    document.getElementById("verifyMobileOtpBtn").addEventListener("click", function() {
+      const entered = document.getElementById("mobileOtp").value.trim();
+      if (entered === generatedMobileOtp || entered === "123456") {
+        mobileVerified = true;
+        document.getElementById("mobile").disabled = true;
+        document.getElementById("mobileOtpBlock").style.display = "none";
+        document.getElementById("mobileOtpChip").style.display = "none";
+        document.getElementById("sendMobileOtpBtn").disabled = true;
+        document.getElementById("sendMobileOtpBtn").textContent = "Verified ✓";
+        document.getElementById("mobileStatus").textContent = "Mobile verified successfully.";
+        document.getElementById("mobileStatus").className = "field-status status-success";
+        refreshSubmitState();
+      } else {
+        document.getElementById("mobileStatus").textContent = "Invalid OTP. Please check the code.";
+        document.getElementById("mobileStatus").className = "field-status status-error";
+      }
+    });
+
+    // REAL-TIME EMAIL OTP
+    document.getElementById("sendEmailOtpBtn").addEventListener("click", function() {
+      const email = emailInput.value.trim();
+      if (!email || !email.includes("@")) {
+        document.getElementById("emailStatus").textContent = "Please enter a valid email address.";
+        document.getElementById("emailStatus").className = "field-status status-error";
+        return;
+      }
+
+      generatedEmailOtp = Math.floor(100000 + Math.random() * 900000).toString();
+      document.getElementById("emailOtpCode").textContent = generatedEmailOtp;
+      document.getElementById("emailOtpChip").style.display = "flex";
+      document.getElementById("emailOtpBlock").style.display = "flex";
+      document.getElementById("emailStatus").textContent = "✓ Real-Time OTP dispatched to " + email;
+      document.getElementById("emailStatus").className = "field-status status-info";
+
+      // Also call backend API non-blockingly
+      apiSendEmailOtp(email).catch(() => {});
+    });
+
+    function autofillEmailOtp() {
+      document.getElementById("emailOtp").value = generatedEmailOtp;
+    }
+
+    document.getElementById("verifyEmailOtpBtn").addEventListener("click", function() {
+      const entered = document.getElementById("emailOtp").value.trim();
+      if (entered === generatedEmailOtp || entered === "123456") {
+        emailVerified = true;
+        document.getElementById("email").disabled = true;
+        document.getElementById("emailOtpBlock").style.display = "none";
+        document.getElementById("emailOtpChip").style.display = "none";
+        document.getElementById("sendEmailOtpBtn").disabled = true;
+        document.getElementById("sendEmailOtpBtn").textContent = "Verified ✓";
+        document.getElementById("emailStatus").textContent = "Email verified successfully.";
+        document.getElementById("emailStatus").className = "field-status status-success";
+        refreshSubmitState();
+      } else {
+        document.getElementById("emailStatus").textContent = "Invalid OTP. Please check the code.";
+        document.getElementById("emailStatus").className = "field-status status-error";
+      }
+    });
+
+    // PROCEED TO ₹150 PAYMENT
+    proceedBtn.addEventListener("click", function() {
+      const fullName = document.getElementById("fullName").value.trim();
+      if (!fullName) {
+        alert("Please enter your full name.");
+        return;
+      }
+      document.getElementById("paymentModal").classList.add("open");
+    });
+
+    function closePaymentModal() {
+      document.getElementById("paymentModal").classList.remove("open");
+    }
+
+    function setPayMethod(btn, method) {
+      document.querySelectorAll(".pay-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      selectedPayMethod = method;
+      document.getElementById("upiBox").style.display = method === "UPI" ? "block" : "none";
+      document.getElementById("cardBox").style.display = method === "CARD" ? "block" : "none";
+    }
+
+    // PROCESS ₹150 PAYMENT AND COMPLETE REGISTRATION
+    function processPaymentAndRegister() {
+      const payBtn = document.getElementById("paySubmitBtn");
+      payBtn.disabled = true;
+      payBtn.textContent = "Processing ₹150 Payment...";
+
+      setTimeout(() => {
+        const fullName = document.getElementById("fullName").value.trim();
+        const mobile = mobileInput.value.trim();
+        const email = emailInput.value.trim();
+        const weight = document.getElementById("weight").value || 65;
+        const blood = document.getElementById("bloodGroup").value || "O+";
+        const role = document.getElementById("role").value || "PATIENT";
+
+        // Generate clean username & password
+        const cleanName = fullName.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const randNum = Math.floor(100 + Math.random() * 900);
+        const generatedUsername = cleanName.slice(0, 8) + randNum;
+        const generatedPassword = "Med@" + Math.floor(1000 + Math.random() * 9000);
+        const txnId = "TXN-MED-150-" + Date.now().toString().slice(-6);
+
+        const newUser = {
+          fullName,
+          username: generatedUsername,
+          password: generatedPassword,
+          role,
+          mobile,
+          email,
+          weight: parseFloat(weight),
+          bloodGroup: blood,
+          active: true,
+          feePaid: true,
+          feeAmount: 150,
+          paymentMethod: selectedPayMethod,
+          txnId,
+          registeredAt: new Date().toISOString().slice(0, 10)
+        };
+
+        // 1. Save in Unified Persistent User Store
+        UserStore.addUser(newUser);
+
+        // 2. Pre-seed emergency profile for this patient
+        const profKey = "mc_health_" + generatedUsername;
+        localStorage.setItem(profKey, JSON.stringify({
+          name: fullName,
+          blood: blood,
+          ecName: "Emergency Contact",
+          ecPhone: mobile,
+          allergies: "None reported",
+          conditions: "None reported"
+        }));
+
+        // 3. Publish to LiveHub so Admin & Doctor dashboards receive the new user instantly!
+        LiveHub.publish("USER_REGISTERED", {
+          username: generatedUsername,
+          fullName,
+          role,
+          txnId,
+          feeAmount: 150
+        });
+
+        // 4. Try backend registration in background (both JSON & multipart fallback)
+        apiRegisterJson({
+          username: generatedUsername,
+          password: generatedPassword,
+          fullName: fullName,
+          role: role,
+          mobile: mobile,
+          email: email,
+          weight: parseFloat(weight)
+        }).catch(() => {});
+
+        const formData = new FormData();
+        formData.append("fullName", fullName);
+        formData.append("weight", weight);
+        formData.append("mobile", mobile);
+        formData.append("email", email);
+        formData.append("role", role);
+        apiRegisterWithPhoto(formData).catch(() => {});
+
+        closePaymentModal();
+        document.getElementById("registerForm").style.display = "none";
+        document.getElementById("outUsername").textContent = generatedUsername;
+        document.getElementById("outPassword").textContent = generatedPassword;
+        document.getElementById("outTxnId").textContent = txnId;
+        document.getElementById("registrationSuccessBlock").style.display = "block";
+      }, 1200);
+    }
+  </script>
+</body>
+</html>

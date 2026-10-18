@@ -23,32 +23,49 @@ public class MedicalRecordService {
         this.ipfsService = ipfsService;
     }
 
-    public MedicalRecord createRecord(String patientUsername, String doctorUsername, String diagnosis) {
+    public MedicalRecord createRecord(String patientUsername, String doctorUsername, String diagnosis,
+                                      String prescription, String attachmentData, String attachmentName, String attachmentType, String status) {
         MedicalRecord record = new MedicalRecord();
         record.setPatientUsername(patientUsername);
         record.setDoctorUsername(doctorUsername);
         record.setDiagnosis(diagnosis);
+        record.setPrescription(prescription);
+        record.setAttachmentData(attachmentData);
+        record.setAttachmentName(attachmentName);
+        record.setAttachmentType(attachmentType);
         record.setDate(LocalDate.now());
-        record.setStatus("Open");
+        record.setStatus(status != null ? status : "Open");
 
-        // 1) Pin the record payload to IPFS (best-effort — null if no node configured)
+        // 1) Pin the record payload to IPFS (best-effort)
         String payload = String.format(
-                "{\"patient\":\"%s\",\"doctor\":\"%s\",\"diagnosis\":\"%s\",\"date\":\"%s\"}",
-                patientUsername, doctorUsername, diagnosis, record.getDate());
+                "{\"patient\":\"%s\",\"doctor\":\"%s\",\"diagnosis\":\"%s\",\"prescription\":\"%s\",\"date\":\"%s\"}",
+                patientUsername, doctorUsername, diagnosis, prescription != null ? prescription : "", record.getDate());
         record.setIpfsCid(ipfsService.addContent(payload));
 
-        // 2) Anchor the same payload on the blockchain for tamper-evidence
+        // 2) Anchor payload on the blockchain for tamper-evidence
         record.setBlockHash(blockchainService.addBlock(payload));
 
         return recordRepository.save(record);
     }
 
-    public MedicalRecord updateDiagnosis(Long recordId, String diagnosis) {
+    public MedicalRecord createRecord(String patientUsername, String doctorUsername, String diagnosis,
+                                      String prescription, String attachmentData, String attachmentName, String attachmentType) {
+        return createRecord(patientUsername, doctorUsername, diagnosis, prescription, attachmentData, attachmentName, attachmentType, "Open");
+    }
+
+    public MedicalRecord updateRecord(Long recordId, String diagnosis, String prescription, String attachmentData, String attachmentName, String attachmentType, String status) {
         MedicalRecord record = recordRepository.findById(recordId)
                 .orElseThrow(() -> new IllegalArgumentException("Record not found: " + recordId));
-        record.setDiagnosis(diagnosis);
-        // Re-anchor the amended content as a new block — the old block still proves the prior version existed.
-        record.setBlockHash(blockchainService.addBlock(diagnosis + "|" + LocalDate.now()));
+        if (diagnosis != null) record.setDiagnosis(diagnosis);
+        if (prescription != null) record.setPrescription(prescription);
+        if (attachmentData != null) {
+            record.setAttachmentData(attachmentData);
+            record.setAttachmentName(attachmentName);
+            record.setAttachmentType(attachmentType);
+        }
+        if (status != null) record.setStatus(status);
+        // Re-anchor amended content on blockchain
+        record.setBlockHash(blockchainService.addBlock(diagnosis + "|" + (prescription != null ? prescription : "") + "|" + LocalDate.now()));
         return recordRepository.save(record);
     }
 

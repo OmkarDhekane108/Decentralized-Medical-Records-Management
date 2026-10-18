@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pharmacy & Dispensing Console — MedChain</title>
+<link rel="stylesheet" href="dashboard-shared.css">
+<style>
+.inv-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:12px;}
+.inv-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;position:relative;}
+.inv-card.low-stock{border-color:rgba(255,82,82,0.4);background:rgba(255,82,82,0.05);}
+.inv-stock{font-size:20px;font-weight:800;font-family:'JetBrains Mono',monospace;margin:6px 0;}
+.inv-stock.low{color:var(--coral);}
+.scanner-box{background:rgba(0,173,181,0.05);border:2px dashed var(--teal);border-radius:14px;padding:24px;text-align:center;margin-bottom:20px;}
+.rx-badge{padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:0.5px;}
+.rx-pending{background:rgba(255,179,0,0.15);color:var(--amber);border:1px solid rgba(255,179,0,0.3);}
+.rx-dispensed{background:rgba(0,255,240,0.15);color:var(--mint);border:1px solid rgba(0,255,240,0.3);}
+.rx-flagged{background:rgba(255,82,82,0.15);color:var(--coral);border:1px solid rgba(255,82,82,0.3);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="mark">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+      </div>
+      <div><div class="name">MedChain</div><div class="sub">Pharmacy Portal</div></div>
+    </div>
+
+    <a class="nav-item active" onclick="goTo('rxQueueCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/><path d="M10 9H8"/></svg> E-Prescription Queue</a>
+    <a class="nav-item" onclick="goTo('scannerCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h.01M7 17h.01M17 7h.01M17 17h.01"/></svg> QR Dispenser</a>
+    <a class="nav-item" onclick="goTo('inventoryCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> Drug Inventory</a>
+    <a class="nav-item" onclick="goTo('billingCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/></svg> Dispense Ledger</a>
+
+    <div class="sidebar-footer">
+      <span class="role-pill" style="background:rgba(0,173,181,0.2);color:var(--teal);">Pharmacist</span>
+      <a class="nav-item" href="#" onclick="logout(); return false;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="title" id="pharmacyTitle">Central Hospital Pharmacy</div>
+        <div class="subtitle">E-Prescription verification, live drug inventory & smart barcode dispensing</div>
+      </div>
+      <div class="topbar-right">
+        <div class="profile-chip">
+          <div class="avatar" style="background:var(--teal);color:#fff;">💊</div>
+          <div class="who"><b id="pharmacistName">Chief Pharmacist</b>Licensed Dispenser</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAT METRICS -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="label">Pending E-Prescriptions</div>
+        <div class="value" id="statPendingRx" style="color:var(--amber);">0</div>
+        <div class="delta">From attending doctors</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Dispensed Today</div>
+        <div class="value" id="statDispensedToday" style="color:var(--mint);">0</div>
+        <div class="delta">Verified on SHA-256 Ledger</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Critical Low Stock Items</div>
+        <div class="value" id="statLowStock" style="color:var(--coral);">2</div>
+        <div class="delta neutral">Re-order alerts active</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Live Hub Connection</div>
+        <div class="value" style="font-size:20px;color:var(--mint);">Synced</div>
+        <div class="delta">Doctor & Patient Real-Time Bus</div>
+      </div>
+    </div>
+
+    <!-- E-PRESCRIPTION QUEUE -->
+    <div class="card" id="rxQueueCard">
+      <div class="card-head">
+        <div>
+          <h3>Live E-Prescription Queue</h3>
+          <div class="hint">Digital prescriptions received directly from doctor consultations</div>
+        </div>
+        <span class="badge-up" style="padding:6px 12px;border-radius:20px;font-size:12px;" id="liveQueueTag">● Listening for Doctors...</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Token / Ref</th>
+            <th>Patient Name</th>
+            <th>Prescribing Doctor</th>
+            <th>Prescribed Medications &amp; Dosage</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="rxQueueBody"></tbody>
+      </table>
+      <div id="rxQueueEmpty" style="display:none;color:var(--muted);padding:24px;text-align:center;">
+        No pending prescriptions in queue. Prescriptions written by doctors will arrive here in real-time.
+      </div>
+    </div>
+
+    <!-- QR CODE SCANNER SIMULATOR -->
+    <div class="card" id="scannerCard">
+      <div class="card-head">
+        <div>
+          <h3>Smart Barcode / Health Card QR Dispenser</h3>
+          <div class="hint">Scan patient emergency QR code or Prescription Token to fetch medications</div>
+        </div>
+      </div>
+      <div class="scanner-box">
+        <div style="font-size:36px;margin-bottom:10px;">📷</div>
+        <h4>Instant Patient QR Scan / Lookup</h4>
+        <p style="color:var(--muted);font-size:13px;max-width:500px;margin:8px auto 16px;">
+          Enter patient username, prescription token (e.g. RX-...), or scan the patient's card to pull their current medication regimen.
+        </p>
+        <div style="display:flex;gap:10px;justify-content:center;max-width:440px;margin:0 auto;">
+          <input type="text" id="scanInput" placeholder="Enter Token or Username (e.g. patient1)" style="padding:10px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.15);background:rgba(0,0,0,0.3);color:#fff;flex:1;">
+          <button class="btn btn-primary" onclick="lookupByScan()">Verify &amp; Load</button>
+        </div>
+      </div>
+      <div id="scanResultCard" style="display:none;background:rgba(255,255,255,0.03);border-radius:12px;padding:16px;border:1px solid rgba(255,255,255,0.1);">
+        <h4 id="scanPatientTitle" style="color:var(--teal);margin-bottom:8px;"></h4>
+        <div id="scanMedDetails" style="font-size:13.5px;color:#E2E8F0;line-height:1.6;"></div>
+        <div style="margin-top:14px;display:flex;gap:10px;">
+          <button class="btn btn-primary" id="scanDispenseBtn">Dispense &amp; Push to Bill</button>
+          <button class="btn btn-outline" onclick="document.getElementById('scanResultCard').style.display='none'">Dismiss</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DRUG INVENTORY CONTROL -->
+    <div class="card" id="inventoryCard">
+      <div class="card-head">
+        <div>
+          <h3>Real-Time Drug Inventory Control</h3>
+          <div class="hint">Live stock tracking with automatic low-stock warnings and doctor interaction flags</div>
+        </div>
+        <button class="btn btn-outline" onclick="openAddDrugModal()">＋ Add Drug Batch</button>
+      </div>
+      <div class="inv-grid" id="inventoryGrid"></div>
+    </div>
+
+    <!-- PHARMACY DISPENSE LEDGER -->
+    <div class="card" id="billingCard">
+      <div class="card-head">
+        <div>
+          <h3>Dispensed Medications &amp; Financial Ledger</h3>
+          <div class="hint">Every fulfilled prescription automatically syncs with Hospital Admin Billing</div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Dispense Time</th>
+            <th>Patient</th>
+            <th>Medicines Dispensed</th>
+            <th>Cost (INR)</th>
+            <th>Billing Sync Status</th>
+          </tr>
+        </thead>
+        <tbody id="dispenseLedgerBody"></tbody>
+      </table>
+      <div id="ledgerEmpty" style="display:none;color:var(--muted);padding:20px;text-align:center;">No medications dispensed today yet.</div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Flag Out of Stock Modal -->
+<div class="modal-overlay" id="flagModal">
+  <div class="modal">
+    <h3>Flag Out of Stock &amp; Suggest Alternative</h3>
+    <div class="modal-sub">Send real-time alert back to the doctor's consultation screen to alter molecule.</div>
+    <div class="field"><label>Patient</label><input id="flagPatient" disabled></div>
+    <div class="field"><label>Unavailable Molecule / Drug</label><input id="flagDrug" placeholder="e.g. Amoxicillin 500mg"></div>
+    <div class="field"><label>Suggested Alternative In Stock</label><input id="flagAlt" placeholder="e.g. Cefuroxime 500mg or Azithromycin 500mg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('flagModal')">Cancel</button>
+      <button class="btn btn-amber" onclick="confirmFlagAlert()">⚡ Send Real-Time Alert to Doctor</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg">Action completed</span></div>
+
+<script src="auth-guard.js"></script>
+<script src="api-client.js"></script>
+<script src="live-hub.js"></script>
+<script>
+const session = requireRole("PHARMACY");
+
+function goTo(id) { document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
+function showToast(m) { const t = document.getElementById("toast"); document.getElementById("toastMsg").textContent = m; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2800); }
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+
+// Default Pharmacy Drug Inventory
+const DRUG_INVENTORY_KEY = "medchain_pharmacy_inventory_v1";
+function loadInventory() {
+  try {
+    const raw = localStorage.getItem(DRUG_INVENTORY_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  const defaults = [
+    { id: "MED-01", name: "Paracetamol 650mg", stock: 120, min: 30, unitCost: 15, batch: "B-8891", exp: "2027-12" },
+    { id: "MED-02", name: "Amoxicillin 500mg", stock: 14, min: 25, unitCost: 85, batch: "B-3312", exp: "2026-11" }, // Low
+    { id: "MED-03", name: "Metformin 500mg", stock: 95, min: 20, unitCost: 40, batch: "B-5541", exp: "2027-04" },
+    { id: "MED-04", name: "Atorvastatin 10mg", stock: 8, min: 20, unitCost: 120, batch: "B-9021", exp: "2026-08" }, // Low
+    { id: "MED-05", name: "Pantoprazole 40mg", stock: 65, min: 20, unitCost: 55, batch: "B-1142", exp: "2028-01" },
+    { id: "MED-06", name: "Cetirizine 10mg", stock: 80, min: 15, unitCost: 25, batch: "B-7729", exp: "2027-09" }
+  ];
+  localStorage.setItem(DRUG_INVENTORY_KEY, JSON.stringify(defaults));
+  return defaults;
+}
+
+function saveInventory(inv) {
+  localStorage.setItem(DRUG_INVENTORY_KEY, JSON.stringify(inv));
+}
+
+let activeFlagRxId = null;
+
+function render() {
+  document.getElementById("pharmacistName").textContent = session.fullName || session.username;
+  renderQueue();
+  renderInventory();
+  renderLedger();
+}
+
+// Render Prescriptions Queue
+function renderQueue() {
+  const queue = MedChainLiveHub.getPharmacyPrescriptions();
+  const tbody = document.getElementById("rxQueueBody");
+  const empty = document.getElementById("rxQueueEmpty");
+  tbody.innerHTML = "";
+
+  const pending = queue.filter(r => r.status === "Pending");
+  const dispensed = queue.filter(r => r.status === "Dispensed");
+  document.getElementById("statPendingRx").textContent = pending.length;
+  document.getElementById("statDispensedToday").textContent = dispensed.length;
+
+  if (!queue.length) {
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  queue.forEach((rx) => {
+    const tr = document.createElement("tr");
+    let badgeClass = "rx-pending";
+    if (rx.status === "Dispensed") badgeClass = "rx-dispensed";
+    if (rx.status === "Flagged") badgeClass = "rx-flagged";
+
+    const actions = rx.status === "Pending" ? `
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-primary" style="padding:5px 10px;font-size:11.5px;" onclick="dispenseRx('${esc(rx.id)}')">✓ Dispense</button>
+        <button class="btn btn-outline" style="padding:5px 10px;font-size:11.5px;color:var(--amber);" onclick="openFlagModal('${esc(rx.id)}')">⚠️ Flag Stock</button>
+      </div>` : `<span style="color:var(--mint);font-size:12px;font-weight:700;">Fulfilled ✓</span>`;
+
+    tr.innerHTML = `
+      <td><code>${esc(rx.token || rx.id)}</code><br><span style="font-size:11px;color:var(--muted);">${new Date(rx.createdAt || Date.now()).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span></td>
+      <td><b>${esc(rx.patientName || rx.patientUsername)}</b><br><code style="font-size:11px;">${esc(rx.patientUsername)}</code></td>
+      <td>Dr. ${esc(rx.doctorName || rx.doctorUsername)}</td>
+      <td style="max-width:280px;line-height:1.4;">${esc(rx.prescription)}</td>
+      <td><span class="rx-badge ${badgeClass}">${esc(rx.status)}</span></td>
+      <td>${actions}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function dispenseRx(rxId) {
+  const rx = MedChainLiveHub.getPharmacyPrescriptions().find(x => x.id === rxId);
+  if (!rx) return;
+
+  const cost = rx.cost || 140; // Default nominal medication cost
+  MedChainLiveHub.updatePharmacyPrescription(rxId, { status: "Dispensed", dispensedAt: new Date().toISOString(), cost });
+
+  // Add entry to Dispense Ledger
+  const ledger = JSON.parse(localStorage.getItem("medchain_dispense_ledger_v1") || "[]");
+  ledger.unshift({
+    rxId,
+    patientUsername: rx.patientUsername,
+    patientName: rx.patientName || rx.patientUsername,
+    prescription: rx.prescription,
+    cost,
+    dispensedAt: new Date().toISOString()
+  });
+  localStorage.setItem("medchain_dispense_ledger_v1", JSON.stringify(ledger));
+
+  // 🔗 Real-Time State Hub Notification:
+  // 1. Notify Patient: Prescription is dispensed and verified
+  LiveHub.publish("PRESCRIPTION_DISPENSED", {
+    patientUsername: rx.patientUsername,
+    prescription: rx.prescription,
+    rxId: rx.id,
+    cost
+  });
+
+  // 2. Notify Hospital Admin: Map pharmaceutical charge to Hospital Checkout Ledger
+  LiveHub.publish("PHARMACY_BILL_CREATED", {
+    patientUsername: rx.patientUsername,
+    patientName: rx.patientName || rx.patientUsername,
+    item: "Medications: " + rx.prescription.slice(0, 30) + "...",
+    amount: cost,
+    invoiceRef: "PHARM-" + Date.now().toString().slice(-4)
+  });
+
+  showToast(`Dispensed prescription for ${rx.patientName}. Transmitted to Central Billing!`);
+  render();
+}
+
+function openFlagModal(rxId) {
+  const rx = MedChainLiveHub.getPharmacyPrescriptions().find(x => x.id === rxId);
+  if (!rx) return;
+  activeFlagRxId = rxId;
+  document.getElementById("flagPatient").value = `${rx.patientName} (${rx.patientUsername})`;
+  document.getElementById("flagDrug").value = rx.prescription;
+  document.getElementById("flagAlt").value = "";
+  document.getElementById("flagModal").classList.add("open");
+}
+
+function confirmFlagAlert() {
+  const drug = document.getElementById("flagDrug").value.trim();
+  const alt = document.getElementById("flagAlt").value.trim();
+  if (!drug || !alt) { showToast("Please fill the out of stock drug and suggested alternative."); return; }
+
+  const rx = MedChainLiveHub.getPharmacyPrescriptions().find(x => x.id === activeFlagRxId);
+  if (rx) {
+    MedChainLiveHub.updatePharmacyPrescription(activeFlagRxId, { status: "Flagged" });
+
+    // 🔗 Interconnection Matrix: Send live event to Doctor Dashboard
+    LiveHub.publish("PHARMACY_STOCK_ALERT", {
+      doctorUsername: rx.doctorUsername,
+      patientUsername: rx.patientUsername,
+      patientName: rx.patientName,
+      drug,
+      alternative: alt,
+      message: `Pharmacist alert: ${drug} is out of stock. Suggested alternative: ${alt}`
+    });
+  }
+
+  closeModal("flagModal");
+  showToast("Alert pushed live to attending doctor's dashboard!");
+  render();
+}
+
+// Render Inventory
+function renderInventory() {
+  const inv = loadInventory();
+  const grid = document.getElementById("inventoryGrid");
+  grid.innerHTML = "";
+  let lowCount = 0;
+
+  inv.forEach((item) => {
+    const isLow = item.stock <= item.min;
+    if (isLow) lowCount++;
+    const card = document.createElement("div");
+    card.className = `inv-card ${isLow ? 'low-stock' : ''}`;
+    card.innerHTML = `
+      <div style="font-weight:700;font-size:14px;color:#fff;">${esc(item.name)}</div>
+      <div class="inv-stock ${isLow ? 'low' : ''}">${item.stock} <span style="font-size:12px;color:var(--muted);font-weight:normal;">units</span></div>
+      <div style="font-size:11px;color:var(--muted);display:flex;justify-content:space-between;">
+        <span>Min Alert: ${item.min}</span>
+        <span>₹${item.unitCost}/unit</span>
+      </div>
+      <div style="font-size:10.5px;color:var(--muted);margin-top:6px;">Batch: ${item.batch} · Exp: ${item.exp}</div>
+      ${isLow ? `<div style="margin-top:8px;color:var(--coral);font-size:11px;font-weight:700;">⚠️ Re-order Required</div>` : ""}
+    `;
+    grid.appendChild(card);
+  });
+
+  document.getElementById("statLowStock").textContent = lowCount;
+}
+
+// Render Ledger
+function renderLedger() {
+  const ledger = JSON.parse(localStorage.getItem("medchain_dispense_ledger_v1") || "[]");
+  const tbody = document.getElementById("dispenseLedgerBody");
+  const empty = document.getElementById("ledgerEmpty");
+  tbody.innerHTML = "";
+
+  if (!ledger.length) {
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  ledger.forEach((l) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${new Date(l.dispensedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</td>
+      <td><b>${esc(l.patientName)}</b></td>
+      <td style="max-width:260px;">${esc(l.prescription)}</td>
+      <td><b>₹${l.cost}</b></td>
+      <td><span class="status-pill normal">Mapped to Hosp. Ledger ✓</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function lookupByScan() {
+  const query = document.getElementById("scanInput").value.trim().toLowerCase();
+  if (!query) { showToast("Please enter username or token"); return; }
+
+  const queue = MedChainLiveHub.getPharmacyPrescriptions();
+  const match = queue.find(x => (x.token && x.token.toLowerCase().includes(query)) || (x.patientUsername && x.patientUsername.toLowerCase() === query) || (x.id && x.id.toLowerCase() === query));
+
+  const box = document.getElementById("scanResultCard");
+  if (!match) {
+    showToast("No active digital prescription found for: " + query);
+    box.style.display = "none";
+    return;
+  }
+
+  document.getElementById("scanPatientTitle").textContent = `Verified E-Prescription: ${match.patientName} (${match.patientUsername})`;
+  document.getElementById("scanMedDetails").innerHTML = `
+    <strong>Prescribed:</strong> ${esc(match.prescription)}<br>
+    <strong>Attending Doctor:</strong> Dr. ${esc(match.doctorName || match.doctorUsername)}<br>
+    <strong>Status:</strong> ${esc(match.status)}<br>
+    <strong>Token Signature:</strong> <code>${esc(match.token || match.id)}</code>
+  `;
+
+  document.getElementById("scanDispenseBtn").onclick = () => {
+    dispenseRx(match.id);
+    box.style.display = "none";
+    document.getElementById("scanInput").value = "";
+  };
+
+  box.style.display = "block";
+  showToast("Prescription found and verified!");
+}
+
+// Listen to Live Events from Doctor Dashboard:
+LiveHub.subscribe("PRESCRIPTION_CREATED", (event) => {
+  showToast(`🔔 New E-Prescription received from Dr. ${event.doctorName || event.doctorUsername} for ${event.patientName}!`);
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

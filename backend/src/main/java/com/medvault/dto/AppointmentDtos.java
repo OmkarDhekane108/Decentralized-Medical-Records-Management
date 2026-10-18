@@ -1,14 +1,10 @@
 package com.medvault.dto;
-
 public class AppointmentDtos {
-
     public static class BookRequest {
         public String patientUsername;
-        public Long hospitalId;
-        public String appointmentTime; // ISO format: "2026-08-25T10:30:00"
+        public Long slotId;
         public String reason;
     }
-
     public static class HospitalRequest {
         public String name;
         public Double lat;
@@ -18,7 +14,16 @@ public class AppointmentDtos {
         public String address;
         public String phone;
     }
-
+    public static class DoctorResponse {
+        public String username;
+        public String fullName;
+        public String specialization;
+        public DoctorResponse(String username, String fullName, String specialization) {
+            this.username = username;
+            this.fullName = fullName;
+            this.specialization = specialization;
+        }
+    }
     public static class ErrorResponse {
         public String message;
         public ErrorResponse(String message) { this.message = message; }

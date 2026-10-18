@@ -68,3 +68,28 @@ function getHospitalById(id) {
   const list = loadHospitalsRaw() || [];
   return list.find(h => h.id === id) || null;
 }
+
+// ---- Hospital login credentials (plaintext shown once, only a salted SHA-256 hash is stored) ----
+function _rand(n) {
+  const cs = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$";
+  const a = new Uint32Array(n); crypto.getRandomValues(a);
+  return Array.from(a, x => cs[x % cs.length]).join("");
+}
+async function _sha(t) {
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t));
+  return Array.from(new Uint8Array(b), x => x.toString(16).padStart(2, "0")).join("");
+}
+async function generateHospitalCredentials(id) {
+  const list = loadHospitalsRaw() || [];
+  const h = list.find(x => x.id === id);
+  if (!h) return null;
+  const password = _rand(10), salt = _rand(8);
+  h.loginId = h.loginId || ("hosp" + h.id.slice(1));
+  h.pwSalt = salt; h.pwHash = await _sha(salt + password); h.credsAt = new Date().toISOString();
+  saveHospitals(list);
+  return { name: h.name, loginId: h.loginId, password };
+}
+async function verifyHospitalLogin(loginId, password) {
+  const h = (loadHospitalsRaw() || []).find(x => x.loginId === loginId);
+  return (h && h.pwHash && (await _sha(h.pwSalt + password)) === h.pwHash) ? h : null;
+}

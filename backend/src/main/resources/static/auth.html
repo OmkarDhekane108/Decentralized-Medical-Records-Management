@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login / Register - Medical Records</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="page">
+        <div class="brand-side">
+            <div class="brand-header">
+                <span class="brand-logo">🏥</span>
+                <span class="brand-name">MedChain Care Hospital</span>
+            </div>
+            <div class="brand-illustration">🩺</div>
+            <h1>Your Health, <br>Securely Connected</h1>
+            <p id="brandTagline">Access your medical records, book appointments, and connect with doctors — all in one place.</p>
+        </div>
+
+        <div class="form-side">
+            <div class="login-container">
+
+                <!-- ================= LOGIN PANEL ================= -->
+                <div id="loginPanel" class="auth-panel">
+                    <div class="login-icon">🔒</div>
+                    <h2 id="loginTitle">Patient Login</h2>
+                    <p class="login-subtitle">Login by filling your details</p>
+
+                    <form id="loginForm">
+                        <label>Username</label>
+                        <input type="text" id="username" placeholder="Enter username" required>
+
+                        <label>Password</label>
+                        <input type="password" id="password" placeholder="Enter password" required>
+
+                        <label>Login As</label>
+                        <select id="loginRole">
+                            <option value="PATIENT">Patient</option>
+                            <option value="DOCTOR">Doctor</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+
+                        <button type="submit" id="loginBtn">Login</button>
+                        <p id="loginErrorMsg" style="display:none;"></p>
+                    </form>
+
+                    <p class="switch-link">Don't have an account? <a href="#" id="goToRegister">Register here</a></p>
+                </div>
+
+                <!-- ================= REGISTER PANEL ================= -->
+                <div id="registerPanel" class="auth-panel" style="display:none;">
+                    <div class="login-icon">📝</div>
+                    <h2 id="registerTitle">Patient Registration</h2>
+                    <p class="login-subtitle">Register by filling your details</p>
+
+                    <form id="registerForm">
+
+                        <!-- Profile picture -->
+                        <label>Profile Picture</label>
+                        <div class="avatar-row">
+                            <img id="avatarPreview" class="avatar-preview" src="" alt="" style="display:none;">
+                            <div id="avatarPlaceholder" class="avatar-placeholder">👤</div>
+                            <input type="file" id="profilePicture" accept="image/*">
+                        </div>
+
+                        <!-- Full name -->
+                        <label>Full Name</label>
+                        <input type="text" id="fullName" placeholder="Enter your full name" required>
+
+                        <!-- Weight -->
+                        <label>Weight (kg)</label>
+                        <input type="number" id="weight" min="1" step="0.1" placeholder="Enter your weight" required>
+
+                        <!-- Mobile + OTP -->
+                        <label>Mobile Number</label>
+                        <div class="otp-row">
+                            <input type="tel" id="mobile" placeholder="Enter mobile number" required>
+                            <button type="button" id="sendMobileOtpBtn" class="btn-otp">Send OTP</button>
+                        </div>
+                        <div id="mobileOtpBlock" class="otp-verify-block" style="display:none;">
+                            <input type="text" id="mobileOtp" placeholder="Enter OTP" maxlength="6">
+                            <button type="button" id="verifyMobileOtpBtn" class="btn-otp">Verify</button>
+                        </div>
+                        <p id="mobileStatus" class="field-status"></p>
+
+                        <!-- Email + OTP -->
+                        <label>Email</label>
+                        <div class="otp-row">
+                            <input type="email" id="email" placeholder="Enter your email" required>
+                            <button type="button" id="sendEmailOtpBtn" class="btn-otp">Send OTP</button>
+                        </div>
+                        <div id="emailOtpBlock" class="otp-verify-block" style="display:none;">
+                            <input type="text" id="emailOtp" placeholder="Enter OTP" maxlength="6">
+                            <button type="button" id="verifyEmailOtpBtn" class="btn-otp">Verify</button>
+                        </div>
+                        <p id="emailStatus" class="field-status"></p>
+
+                        <!-- Role -->
+                        <label>Register As</label>
+                        <select id="registerRole">
+                            <option value="PATIENT">Patient</option>
+                            <option value="DOCTOR">Doctor</option>
+                            <option value="ADMIN">Admin</option>
+                        </select>
+
+                        <p class="hint-text">Your username and password will be generated automatically and sent to your verified mobile number (SMS/WhatsApp) and email.</p>
+
+                        <button type="submit" id="registerBtn" disabled>Submit</button>
+                        <button type="reset" id="resetBtn" class="btn-reset">Reset</button>
+
+                        <p id="registerErrorMsg" style="display:none;"></p>
+                        <p id="registerSuccessMsg" style="display:none;"></p>
+                    </form>
+
+                    <p class="switch-link">Already have an account? <a href="#" id="goToLogin">Login here</a></p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="api-client.js"></script>
+    <script>
+        // ==============================================================
+        // Shared: dashboard redirects & role-based titles
+        // ==============================================================
+        const DASHBOARD_BY_ROLE = {
+            "PATIENT": "patient-dashboard.html",
+            "DOCTOR": "doctor-dashboard.html",
+            "ADMIN": "admin-dashboard.html"
+        };
+        const LOGIN_TITLES = {
+            "PATIENT": "Patient Login",
+            "DOCTOR": "Doctor Login",
+            "ADMIN": "Admin Login"
+        };
+        const REGISTER_TITLES = {
+            "PATIENT": "Patient Registration",
+            "DOCTOR": "Doctor Registration",
+            "ADMIN": "Admin Registration"
+        };
+
+        // ==============================================================
+        // Panel switching (via bottom links only)
+        // ==============================================================
+        const loginPanel = document.getElementById("loginPanel");
+        const registerPanel = document.getElementById("registerPanel");
+        const goToRegister = document.getElementById("goToRegister");
+        const goToLogin = document.getElementById("goToLogin");
+
+        function showLogin() {
+            loginPanel.style.display = "block";
+            registerPanel.style.display = "none";
+        }
+
+        function showRegister() {
+            loginPanel.style.display = "none";
+            registerPanel.style.display = "block";
+        }
+
+        goToRegister.addEventListener("click", (e) => { e.preventDefault(); showRegister(); });
+        goToLogin.addEventListener("click", (e) => { e.preventDefault(); showLogin(); });
+
+        // ==============================================================
+        // LOGIN logic
+        // ==============================================================
+        const loginRoleSelect = document.getElementById("loginRole");
+        const loginTitle = document.getElementById("loginTitle");
+
+        loginRoleSelect.addEventListener("change", () => {
+            loginTitle.textContent = LOGIN_TITLES[loginRoleSelect.value];
+        });
+
+        document.getElementById("loginForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value;
+            const role = loginRoleSelect.value;
+            const errorMsg = document.getElementById("loginErrorMsg");
+            const btn = document.getElementById("loginBtn");
+            errorMsg.style.display = "none";
+            btn.disabled = true;
+            btn.textContent = "Logging in...";
+            try {
+                const res = await apiLogin(username, password, role);
+                localStorage.setItem("mc_token", res.token);
+                localStorage.setItem("mc_username", res.username);
+                localStorage.setItem("mc_role", res.role);
+                localStorage.setItem("mc_fullName", res.fullName || res.username);
+                window.location.href = DASHBOARD_BY_ROLE[res.role.toUpperCase()];
+            } catch (err) {
+                errorMsg.textContent = err.message || "Login failed. Is the backend server running?";
+                errorMsg.style.display = "block";
+                btn.disabled = false;
+                btn.textContent = "Login";
+            }
+        });
+
+        // ==============================================================
+        // REGISTER logic
+        // Username & password are now generated by the BACKEND (server.js)
+        // and stored in the SQLite database - the frontend just displays
+        // whatever the server returns.
+        // ==============================================================
+        const registerRoleSelect = document.getElementById("registerRole");
+        const registerTitle = document.getElementById("registerTitle");
+
+        registerRoleSelect.addEventListener("change", () => {
+            registerTitle.textContent = REGISTER_TITLES[registerRoleSelect.value];
+        });
+
+        // ---------- Profile picture preview ----------
+        const profilePictureInput = document.getElementById("profilePicture");
+        const avatarPreview = document.getElementById("avatarPreview");
+        const avatarPlaceholder = document.getElementById("avatarPlaceholder");
+        profilePictureInput.addEventListener("change", () => {
+            const file = profilePictureInput.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                avatarPreview.src = e.target.result;
+                avatarPreview.style.display = "block";
+                avatarPlaceholder.style.display = "none";
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // ---------- Verification state ----------
+        let mobileVerified = false;
+        let emailVerified = false;
+
+        const mobileInput = document.getElementById("mobile");
+        const emailInput = document.getElementById("email");
+        const registerBtn = document.getElementById("registerBtn");
+
+        function refreshSubmitState() {
+            registerBtn.disabled = !(mobileVerified && emailVerified);
+        }
+
+        // ---------- Mobile OTP ----------
+        const sendMobileOtpBtn = document.getElementById("sendMobileOtpBtn");
+        const mobileOtpBlock = document.getElementById("mobileOtpBlock");
+        const mobileOtpInput = document.getElementById("mobileOtp");
+        const verifyMobileOtpBtn = document.getElementById("verifyMobileOtpBtn");
+        const mobileStatus = document.getElementById("mobileStatus");
+
+        sendMobileOtpBtn.addEventListener("click", async () => {
+            const mobile = mobileInput.value.trim();
+            if (!mobile) {
+                mobileStatus.textContent = "Enter a mobile number first.";
+                mobileStatus.className = "field-status status-error";
+                return;
+            }
+            sendMobileOtpBtn.disabled = true;
+            sendMobileOtpBtn.textContent = "Sending...";
+            try {
+                await apiSendOtp(mobile);
+                mobileOtpBlock.style.display = "flex";
+                mobileStatus.textContent = "OTP sent to your mobile number.";
+                mobileStatus.className = "field-status status-info";
+            } catch (err) {
+                mobileStatus.textContent = err.message || "Failed to send OTP.";
+                mobileStatus.className = "field-status status-error";
+            } finally {
+                sendMobileOtpBtn.disabled = false;
+                sendMobileOtpBtn.textContent = "Send OTP";
+            }
+        });
+
+        verifyMobileOtpBtn.addEventListener("click", async () => {
+            const mobile = mobileInput.value.trim();
+            const otp = mobileOtpInput.value.trim();
+            if (!otp) return;
+            verifyMobileOtpBtn.disabled = true;
+            verifyMobileOtpBtn.textContent = "Verifying...";
+            try {
+                await apiVerifyOtp(mobile, otp);
+                mobileVerified = true;
+                mobileInput.disabled = true;
+                sendMobileOtpBtn.disabled = true;
+                mobileOtpInput.disabled = true;
+                verifyMobileOtpBtn.textContent = "Verified ✓";
+                mobileStatus.textContent = "Mobile number verified.";
+                mobileStatus.className = "field-status status-success";
+                refreshSubmitState();
+            } catch (err) {
+                mobileStatus.textContent = err.message || "Invalid OTP.";
+                mobileStatus.className = "field-status status-error";
+                verifyMobileOtpBtn.disabled = false;
+                verifyMobileOtpBtn.textContent = "Verify";
+            }
+        });
+
+        // ---------- Email OTP ----------
+        const sendEmailOtpBtn = document.getElementById("sendEmailOtpBtn");
+        const emailOtpBlock = document.getElementById("emailOtpBlock");
+        const emailOtpInput = document.getElementById("emailOtp");
+        const verifyEmailOtpBtn = document.getElementById("verifyEmailOtpBtn");
+        const emailStatus = document.getElementById("emailStatus");
+
+        sendEmailOtpBtn.addEventListener("click", async () => {
+            const email = emailInput.value.trim();
+            if (!email) {
+                emailStatus.textContent = "Enter an email address first.";
+                emailStatus.className = "field-status status-error";
+                return;
+            }
+            sendEmailOtpBtn.disabled = true;
+            sendEmailOtpBtn.textContent = "Sending...";
+            try {
+                await apiSendEmailOtp(email);
+                emailOtpBlock.style.display = "flex";
+                emailStatus.textContent = "OTP sent to your email.";
+                emailStatus.className = "field-status status-info";
+            } catch (err) {
+                emailStatus.textContent = err.message || "Failed to send OTP.";
+                emailStatus.className = "field-status status-error";
+            } finally {
+                sendEmailOtpBtn.disabled = false;
+                sendEmailOtpBtn.textContent = "Send OTP";
+            }
+        });
+
+        verifyEmailOtpBtn.addEventListener("click", async () => {
+            const email = emailInput.value.trim();
+            const otp = emailOtpInput.value.trim();
+            if (!otp) return;
+            verifyEmailOtpBtn.disabled = true;
+            verifyEmailOtpBtn.textContent = "Verifying...";
+            try {
+                await apiVerifyEmailOtp(email, otp);
+                emailVerified = true;
+                emailInput.disabled = true;
+                sendEmailOtpBtn.disabled = true;
+                emailOtpInput.disabled = true;
+                verifyEmailOtpBtn.textContent = "Verified ✓";
+                emailStatus.textContent = "Email verified.";
+                emailStatus.className = "field-status status-success";
+                refreshSubmitState();
+            } catch (err) {
+                emailStatus.textContent = err.message || "Invalid OTP.";
+                emailStatus.className = "field-status status-error";
+                verifyEmailOtpBtn.disabled = false;
+                verifyEmailOtpBtn.textContent = "Verify";
+            }
+        });
+
+        // ---------- Register submit ----------
+        document.getElementById("registerForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            if (!mobileVerified || !emailVerified) return;
+
+            const errorMsg = document.getElementById("registerErrorMsg");
+            const successMsg = document.getElementById("registerSuccessMsg");
+            errorMsg.style.display = "none";
+            successMsg.style.display = "none";
+            registerBtn.disabled = true;
+            registerBtn.textContent = "Registering...";
+
+            const fullNameVal = document.getElementById("fullName").value.trim();
+
+            const formData = new FormData();
+            formData.append("fullName", fullNameVal);
+            formData.append("weight", document.getElementById("weight").value);
+            formData.append("mobile", mobileInput.value.trim());
+            formData.append("email", emailInput.value.trim());
+            formData.append("role", registerRoleSelect.value);
+            const photoFile = profilePictureInput.files[0];
+            if (photoFile) formData.append("profilePicture", photoFile);
+
+            try {
+                // Backend generates username & password, saves the user to
+                // the database, and returns the credentials once.
+                const res = await apiRegisterWithPhoto(formData);
+                successMsg.innerHTML =
+                    "Registration successful! Your login credentials have been sent to your verified mobile number (SMS/WhatsApp) and email.<br><br>" +
+                    `<strong>Username:</strong> ${res.username}<br>` +
+                    `<strong>Password:</strong> ${res.password}`;
+                successMsg.style.display = "block";
+                setTimeout(() => {
+                    showLogin();
+                    successMsg.style.display = "none";
+                }, 6000);
+            } catch (err) {
+                errorMsg.textContent = err.message || "Registration failed. Is the backend server running?";
+                errorMsg.style.display = "block";
+                registerBtn.disabled = false;
+                registerBtn.textContent = "Submit";
+            }
+        });
+    </script>
+</body>
+</html>

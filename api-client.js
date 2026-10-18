@@ -1,4 +1,4 @@
-﻿// Point this at your Spring Boot backend.
+// Point this at your Spring Boot backend.
 const API_ORIGIN = "http://localhost:8081";
 const API_BASE = API_ORIGIN + "/api/auth";
 
@@ -89,6 +89,16 @@ async function apiRegisterWithPhoto(formData) {
   const res = await fetch(`${API_BASE}/register`, {
     method: "POST",
     body: formData,
+  });
+  return handleJsonResponse(res);
+}
+
+// ---- Register (JSON direct) ----
+async function apiRegisterJson(data) {
+  const res = await fetch(`${API_BASE}/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
   });
   return handleJsonResponse(res);
 }

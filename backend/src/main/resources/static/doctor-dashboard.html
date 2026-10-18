@@ -2,8 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Doctor Dashboard — MedChain</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doctor Portal — MedChain</title>
 <link rel="stylesheet" href="dashboard-shared.css">
+<style>
+.rx-card{background:rgba(0,173,181,0.06);border:1px solid rgba(0,173,181,0.2);border-radius:10px;padding:10px 14px;margin-top:6px;font-size:12.5px;}
+.rx-card b{color:var(--mint);display:block;margin-bottom:3px;}
+.doc-pill{padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;}
+.pill-proc{background:rgba(255,179,0,0.15);color:var(--amber);border:1px solid rgba(255,179,0,0.3);}
+.pill-done{background:rgba(0,255,240,0.15);color:var(--mint);border:1px solid rgba(0,255,240,0.3);}
+.pill-wait{background:rgba(255,255,255,0.08);color:#CBD5E1;border:1px solid rgba(255,255,255,0.15);}
+.alert-banner{background:rgba(255,82,82,0.12);border:1px solid rgba(255,82,82,0.35);border-radius:12px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;color:#fff;}
+.queue-box{background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px;margin-bottom:20px;}
+.badge-admit{background:rgba(239,68,68,0.2);color:#FCA5A5;border:1px solid rgba(239,68,68,0.4);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;}
+</style>
 </head>
 <body>
 <div class="app">
@@ -12,20 +24,20 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="mark">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
       </div>
       <div><div class="name">MedChain</div><div class="sub">Doctor Portal</div></div>
     </div>
 
-    <a class="nav-item active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg> Overview</a>
-    <a class="nav-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> My Patients</a>
-    <a class="nav-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Appointments</a>
-    <a class="nav-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6z"/></svg> Chain Verification</a>
-    <a class="nav-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg> Settings</a>
+    <a class="nav-item active" onclick="goTo('apptReqCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> Patient Queue &amp; Appts</a>
+    <a class="nav-item" onclick="goTo('recordsCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg> Clinical Records</a>
+    <a class="nav-item" onclick="goTo('patientsCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> Patient Vault</a>
+    <a class="nav-item" onclick="goTo('referralCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6.5-4.35-9.5-8.5C-0.5 8 2 3 6.5 3c2 0 3.5 1 5.5 3 2-2 3.5-3 5.5-3C22 3 24.5 8 21.5 12.5 18.5 16.65 12 21 12 21z"/></svg> Hospital Referrals</a>
+    <a class="nav-item" onclick="goTo('visualizerCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> Blockchain Explorer</a>
 
     <div class="sidebar-footer">
       <span class="role-pill">Doctor</span>
-      <a class="nav-item" href="login.html"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
+      <a class="nav-item" href="#" onclick="logout(); return false;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
     </div>
   </aside>
 
@@ -33,94 +45,208 @@
   <main class="main">
     <div class="topbar">
       <div>
-        <div class="title">Good morning, Dr. Sharma</div>
-        <div class="subtitle">Here's what's happening with your patients today</div>
+        <div class="title" id="greetTitle">Good day, Doctor</div>
+        <div class="subtitle">Clinical records, electronic prescriptions &amp; patient consultation desk</div>
       </div>
-      <div class="topbar-right" style="display:flex; align-items:center;">
+      <div class="topbar-right">
         <div class="search-box">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          <input placeholder="Search patients...">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input placeholder="Search patient history..." oninput="filterPatients(this.value)">
         </div>
         <div class="profile-chip">
-          <div class="avatar">DS</div>
-          <div class="who"><b>Dr. Sharma</b>Physician</div>
+          <div class="avatar" id="doctorAvatar">DR</div>
+          <div class="who"><b id="doctorNameLabel">Doctor</b>Attending Physician</div>
         </div>
       </div>
+    </div>
+
+    <!-- PHARMACY REAL-TIME ALERT BANNER (If out of stock) -->
+    <div class="alert-banner" id="pharmacyAlertBanner" style="display:none;">
+      <div>
+        <strong style="color:var(--coral);font-size:14px;">⚠️ Live Pharmacy Inventory Alert:</strong>
+        <div id="pharmacyAlertText" style="font-size:13px;margin-top:2px;">A molecule prescribed earlier is currently unavailable.</div>
+      </div>
+      <button class="btn btn-outline" style="padding:6px 12px;font-size:11.5px;" onclick="document.getElementById('pharmacyAlertBanner').style.display='none'">Dismiss</button>
     </div>
 
     <div class="stat-row">
       <div class="stat-card">
-        <div class="label">Total Patients</div>
-        <div class="value" id="statPatients">—</div>
-        <div class="delta neutral">Under your care</div>
+        <div class="label">Patient Queue Today</div>
+        <div class="value" id="statApptsToday">0</div>
+        <div class="delta" style="color:var(--mint);">Active Consultations</div>
       </div>
       <div class="stat-card">
-        <div class="label">Records Added Today</div>
-        <div class="value" id="statToday">—</div>
-        <div class="delta">Chain-verified on save</div>
+        <div class="label">Attended Clinical Records</div>
+        <div class="value" id="statRecords">0</div>
+        <div class="delta">Anchored on SHA-256 Chain</div>
       </div>
       <div class="stat-card">
-        <div class="label">Chain Status</div>
-        <div class="value" style="font-size:20px; color:var(--mint);">Verified</div>
-        <div class="delta">SHA-256 hash-linked</div>
+        <div class="label">In Treatment (Processing)</div>
+        <div class="value" id="statProcessing" style="color:var(--amber);">0</div>
+        <div class="delta neutral">Under ongoing care</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Hospital Referrals</div>
+        <div class="value" id="statReferrals">0</div>
+        <div class="delta neutral">Specialist Centers</div>
       </div>
     </div>
 
-    <div class="card">
+    <!-- 1. APPOINTMENT REQUESTS & PATIENT CONSULTATION QUEUE -->
+    <div class="card" id="apptReqCard">
       <div class="card-head">
         <div>
-          <h3>Patient List</h3>
-          <div class="hint">Add a diagnosis to append a new hash-linked record</div>
+          <h3>Doctor Consultation Queue &amp; Appointment Requests</h3>
+          <div class="hint">Patients booked specifically for your consultation — update status to <b>Processing</b> or <b>Done</b></div>
         </div>
-        <button class="btn btn-primary" id="addBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
-          Add Diagnosis
+        <span class="badge-up" style="padding:6px 14px;border-radius:20px;font-size:12px;" id="queueSyncTag">● Live Working Queue</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Token / Patient</th>
+            <th>Booking Time</th>
+            <th>Hospital / Facility</th>
+            <th>Reason / Symptoms</th>
+            <th>Treatment Status</th>
+            <th>Doctor Clinical Action</th>
+          </tr>
+        </thead>
+        <tbody id="apptReqBody"></tbody>
+      </table>
+      <div id="apptReqEmpty" style="display:none;color:var(--muted);padding:20px;text-align:center;">
+        No pending appointment requests. Patients who book a visit with you will appear here in real-time.
+      </div>
+    </div>
+
+    <!-- 2. CLINICAL RECORDS & PATIENT PRESCRIPTIONS -->
+    <div class="card" id="recordsCard">
+      <div class="card-head">
+        <div>
+          <h3>Attended Clinical Records &amp; E-Prescriptions</h3>
+          <div class="hint">View patient-submitted reports, attached prescriptions (JPG, PNG, PDF), and update treatment</div>
+        </div>
+        <button class="btn btn-primary" onclick="openNewRecordModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Create Clinical Record / E-Rx
         </button>
       </div>
       <table>
-        <thead><tr><th>Patient</th><th>Last Diagnosis</th><th>Last Visit</th><th>Chain Verification</th><th></th></tr></thead>
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th>Date</th>
+            <th>Clinical Diagnosis</th>
+            <th>Prescription &amp; Medicines</th>
+            <th>Document / Attachment</th>
+            <th>Status</th>
+            <th>Cryptographic Seal</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="recordsBody"></tbody>
+      </table>
+      <div class="empty-state" id="recordsEmpty" style="display:none;">
+        <p>No clinical records registered yet.</p>
+      </div>
+    </div>
+
+    <!-- 3. PATIENT DIRECTORY & CONSENT STATUS -->
+    <div class="card" id="patientsCard">
+      <div class="card-head">
+        <div>
+          <h3>Registered Patients &amp; Health Vault Access</h3>
+          <div class="hint">Patient directory with decentralized privacy consent verification</div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Patient Full Name</th>
+            <th>Username</th>
+            <th>Emergency Blood Group</th>
+            <th>Privacy Consent</th>
+            <th>Action</th>
+          </tr>
+        </thead>
         <tbody id="patientBody"></tbody>
       </table>
     </div>
 
-    <div class="card">
+    <!-- 4. HOSPITAL REFERRALS (No Google Map - Clean Specialist Directory) -->
+    <div class="card" id="referralCard">
       <div class="card-head">
-        <div><h3>Recent Referrals</h3><div class="hint">Patients you've referred to specialist hospitals</div></div>
+        <div>
+          <h3>Specialist Hospital Referrals &amp; Bed Requests</h3>
+          <div class="hint">Directly refer critical patients to partner hospital emergency beds / departments</div>
+        </div>
+        <button class="btn btn-amber" id="quickReferBtn">＋ Refer Patient to Hospital</button>
       </div>
-      <table>
-        <thead><tr><th>Patient</th><th>Referred To</th><th>Reason</th><th>Status</th><th>Chain Verification</th></tr></thead>
-        <tbody id="referralBody"></tbody>
-      </table>
-      <div class="empty-state" id="referralEmpty" style="display:none;">
-        <p>No referrals yet. Use "Refer →" on a patient to send them to a specialist hospital.</p>
+      
+      <div style="margin-top:14px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Referred Hospital</th>
+              <th>Reason for Referral</th>
+              <th>Admit Urgency</th>
+              <th>Hospital Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="referralBody"></tbody>
+        </table>
+        <div class="empty-state" id="referralEmpty" style="display:none;">
+          <p>No active hospital referrals created yet.</p>
+        </div>
       </div>
     </div>
 
-    <div class="card">
+    <!-- 5. BLOCKCHAIN VISUALIZER -->
+    <div class="card" id="visualizerCard">
       <div class="card-head">
-        <div><h3>Recent Chain Activity</h3><div class="hint">Latest blocks appended across all patients</div></div>
+        <div>
+          <h3>Live Medical Blockchain Ledger</h3>
+          <div class="hint">SHA-256 block chain anchoring patient diagnoses, prescriptions and tamper checks</div>
+        </div>
       </div>
-      <table>
-        <thead><tr><th>Patient</th><th>Diagnosis</th><th>Date</th><th>Block Hash</th></tr></thead>
-        <tbody id="activityBody"></tbody>
-      </table>
+      <div id="doctorVisualizerContainer"></div>
     </div>
+
   </main>
 </div>
 
-<!-- Add Diagnosis Modal -->
-<div class="modal-overlay" id="addModal">
-  <div class="modal">
-    <h3>Add Diagnosis</h3>
-    <div class="modal-sub">A new block will be hashed and linked to this patient's chain.</div>
-    <div class="field"><label>Patient</label>
-      <select id="fPatient"><option value="ravi">Ravi Kumar</option><option value="anita">Anita Joshi</option></select>
+<!-- Create / Update Clinical Record Modal -->
+<div class="modal-overlay" id="recordModal">
+  <div class="modal" style="width:620px;">
+    <h3 id="recordModalTitle">Create Clinical Record &amp; E-Prescription</h3>
+    <div class="modal-sub">Anchors the consultation on the blockchain and automatically pushes prescription to Hospital Pharmacy.</div>
+    <div class="field"><label>Select Patient</label>
+      <select id="mPatientSelect"></select>
     </div>
-    <div class="field"><label>Diagnosis / Notes</label><input id="fDiagnosis" placeholder="e.g. Prescribed antibiotics"></div>
-    <div class="field"><label>Date</label><input id="fDate" type="date"></div>
+    <div class="field"><label>Clinical Diagnosis / Examination Findings</label>
+      <textarea id="mDiagnosis" placeholder="e.g. Acute bronchitis with low-grade fever" style="height:70px;"></textarea>
+    </div>
+    <div class="field"><label>💊 E-Prescription / Medicines (Pushed Live to Pharmacy)</label>
+      <textarea id="mPrescription" placeholder="e.g. Amoxicillin 500mg (1-0-1) 5 days, Paracetamol 650mg SOS" style="height:75px;"></textarea>
+    </div>
+    <div class="field"><label>Treatment Status</label>
+      <select id="mStatus">
+        <option value="Processing">🟡 In Treatment (Processing)</option>
+        <option value="Done">🟢 Treatment Done (Completed)</option>
+      </select>
+    </div>
+    <div class="field"><label>Attach Diagnostic Report / Lab Scan (JPG, PNG, PDF)</label>
+      <div class="file-dropzone" id="mDropzone" onclick="document.getElementById('mFileInput').click()">
+        <div class="file-dropzone-icon">📎</div>
+        <div class="file-dropzone-text" id="mFileName">Click or drop file (JPG, PNG, PDF)</div>
+        <div class="file-dropzone-sub">Optional test report attachment</div>
+      </div>
+      <input type="file" id="mFileInput" accept=".jpg,.jpeg,.png,.pdf" style="display:none;">
+    </div>
     <div class="modal-actions">
-      <button class="btn btn-outline" id="cancelAdd">Cancel</button>
-      <button class="btn btn-primary" id="confirmAdd">Add to Chain</button>
+      <button class="btn btn-outline" onclick="closeModal('recordModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveRecordBtn" onclick="saveClinicalRecord()">Seal on Blockchain &amp; Transmit to Pharmacy →</button>
     </div>
   </div>
 </div>
@@ -128,158 +254,485 @@
 <!-- Refer to Hospital Modal -->
 <div class="modal-overlay" id="referModal">
   <div class="modal">
-    <h3>Refer to Hospital</h3>
-    <div class="modal-sub">Patient's medical history stays chain-verified when shared for referral.</div>
-    <div class="field"><label>Patient</label><input id="rPatientName" disabled></div>
-    <div class="field"><label>Refer To Hospital</label>
-      <select id="rHospital"></select>
+    <h3>Refer Patient to Specialist Hospital</h3>
+    <div class="modal-sub">Triggers an immediate admission alert in the Hospital Admin Bed Grid.</div>
+    <div class="field"><label>Select Patient</label><select id="rPatient"></select></div>
+    <div class="field"><label>Select Specialist Center</label><select id="rHospital"></select></div>
+    <div class="field"><label>Reason for Referral</label><input id="rReason" placeholder="e.g. Requires emergency ICU care / specialist surgery"></div>
+    <div class="field"><label>Urgency Level</label>
+      <select id="rUrgency">
+        <option value="Emergency Admit">🚨 Emergency Admit (Reserve Bed Immediately)</option>
+        <option value="Elective Referral">Routine Specialist Referral</option>
+      </select>
     </div>
-    <div class="field"><label>Reason for Referral</label><input id="rReason" placeholder="e.g. Suspected cardiac issue, needs specialist"></div>
-    <div class="field"><label>Date</label><input id="rDate" type="date"></div>
     <div class="modal-actions">
-      <button class="btn btn-outline" id="cancelRefer">Cancel</button>
-      <button class="btn btn-amber" id="confirmRefer">Send Referral</button>
+      <button class="btn btn-outline" onclick="closeModal('referModal')">Cancel</button>
+      <button class="btn btn-amber" onclick="confirmReferral()">Confirm Referral →</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2FAE85" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>
-  <span id="toastMsg">Diagnosis added and hash-verified</span>
+<!-- View Document Attachment Modal -->
+<div class="modal-overlay" id="docViewerModal">
+  <div class="modal" style="width:700px;max-width:95vw;">
+    <h3 id="docViewerTitle">Attached Medical Document</h3>
+    <div class="modal-sub" id="docViewerSub">Document verified with SHA-256 block anchor.</div>
+    <div id="docViewerContent" style="margin:16px 0;text-align:center;max-height:500px;overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('docViewerModal')">Close</button>
+      <a class="btn btn-primary" id="docDownloadBtn" target="_blank" download>Download File</a>
+    </div>
+  </div>
 </div>
 
-<script src="hospital-engine.js"></script>
-<script src="chain-engine.js"></script>
-<script>
-const PATIENTS = {
-  ravi: { name: "Ravi Kumar", initials: "RK" },
-  anita: { name: "Anita Joshi", initials: "AJ" },
-};
-const DOCTOR_NAME = "Dr. Sharma";
+<div class="toast" id="toast"><span id="toastMsg">Saved</span></div>
 
+<script src="auth-guard.js"></script>
+<script src="api-client.js"></script>
+<script src="user-store.js"></script>
+<script src="hospital-engine.js"></script>
+<script src="appointment-engine.js"></script>
+<script src="blockchain-visualizer.js"></script>
+<script src="live-hub.js"></script>
+<script>
+const session = requireRole("DOCTOR");
+
+function goTo(id) { document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }); }
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 2800);
+}
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function fmtDate(d) {
-  if (d === "—") return d;
-  return new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  if (!d) return "—";
+  const date = Array.isArray(d) ? new Date(d[0], d[1] - 1, d[2]) : new Date(d);
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+function shortHash(h) { return !h ? "Pending Block" : h.slice(0, 8) + "…" + h.slice(-6); }
+function initialsOf(name) {
+  if (!name) return "DR";
+  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
+let cachedRecords = [], cachedPatients = [];
+let attachedFileBase64 = null, attachedFileName = null, attachedFileType = null;
+let editingRecordId = null;
+
 async function render() {
-  const chain = await seedChainIfEmpty();
-  const records = chain.filter(b => b.type === "record");
-  const referrals = chain.filter(b => b.type === "referral");
+  document.getElementById("greetTitle").textContent = "Good day, Dr. " + (session.fullName || session.username);
+  document.getElementById("doctorNameLabel").textContent = session.fullName || session.username;
+  document.getElementById("doctorAvatar").textContent = initialsOf(session.fullName || session.username);
 
-  document.getElementById("statPatients").textContent = Object.keys(PATIENTS).length;
-  const todayStr = new Date().toISOString().slice(0, 10);
-  document.getElementById("statToday").textContent = records.filter(r => r.date === todayStr).length;
+  renderApptRequests();
+  renderReferrals();
 
-  // Patient list — latest record per patient
+  // 1. Load records from UserStore & API
+  const storeRecords = UserStore.getAllRecords();
+  try {
+    const apiRecords = await apiRequest("/api/doctor/records");
+    if (Array.isArray(apiRecords) && apiRecords.length > 0) {
+      cachedRecords = apiRecords;
+      storeRecords.forEach(sr => {
+        if (!cachedRecords.find(cr => cr.id === sr.id)) cachedRecords.unshift(sr);
+      });
+    } else {
+      cachedRecords = storeRecords;
+    }
+  } catch (err) {
+    cachedRecords = storeRecords;
+  }
+
+  // 2. Load patients from UserStore & API (guarantees every registered patient shows up)
+  const allStorePatients = UserStore.getPatients();
+  try {
+    const apiPatients = await apiRequest("/api/doctor/patients");
+    const map = new Map();
+    allStorePatients.forEach(p => map.set(p.username, p));
+    if (Array.isArray(apiPatients)) {
+      apiPatients.forEach(p => map.set(p.username, { ...p, fullName: p.fullName || p.username }));
+    }
+    cachedPatients = Array.from(map.values());
+  } catch (err) {
+    cachedPatients = allStorePatients;
+  }
+
+  // Count Processing Status
+  const procCount = cachedRecords.filter(r => r.status === "Processing").length;
+  document.getElementById("statProcessing").textContent = procCount;
+  document.getElementById("statRecords").textContent = cachedRecords.length;
+
+  renderRecordsTable(cachedRecords);
+  renderPatientsTable(cachedPatients);
+  renderBlockchainVisualizer("doctorVisualizerContainer", cachedRecords);
+}
+
+// 1. APPOINTMENTS WORKING QUEUE (Doctor can mark Processing or Done)
+function renderApptRequests() {
+  const all = ApptStore.all();
+  // Filter for this doctor or all unassigned hospital bookings
+  const list = all.filter(a => !a.doctorUsername || a.doctorUsername === session.username || a.doctorName?.includes(session.username));
+  list.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+
+  document.getElementById("statApptsToday").textContent = list.length;
+  const tbody = document.getElementById("apptReqBody");
+  const empty = document.getElementById("apptReqEmpty");
+  tbody.innerHTML = "";
+
+  if (!list.length) {
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+
+  list.forEach(a => {
+    const tr = document.createElement("tr");
+    let pillCls = "pill-wait";
+    if (a.status === "Processing") pillCls = "pill-proc";
+    if (a.status === "Done" || a.status === "Confirmed") pillCls = "pill-done";
+
+    tr.innerHTML = `
+      <td>
+        <b>${esc(a.patientName)}</b><br>
+        <code>${esc(a.patientUsername)}</code>
+      </td>
+      <td>${esc(fmtDate(a.date))}<br><b style="color:var(--mint);">${esc(a.time)}</b></td>
+      <td>${esc(a.hospital || "Central Facility")}</td>
+      <td>${esc(a.reason || "Consultation")}</td>
+      <td><span class="doc-pill ${pillCls}">${esc(a.status || "Pending")}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-ghost" style="padding:5px 9px;font-size:11px;" onclick="updateApptStatus('${esc(a.id)}','Processing')">🟡 In Treatment</button>
+          <button class="btn btn-primary" style="padding:5px 9px;font-size:11px;" onclick="updateApptStatus('${esc(a.id)}','Done')">🟢 Treatment Done</button>
+          <button class="btn btn-outline" style="padding:5px 9px;font-size:11px;" onclick="openNewRecordFor('${esc(a.patientUsername)}','${esc(a.patientName)}')">💊 Write Rx</button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function updateApptStatus(id, newStatus) {
+  ApptStore.update(id, { status: newStatus, doctorUsername: session.username, updatedAt: new Date().toISOString() });
+  
+  // 🔗 Real-time Hub: Notify Patient
+  LiveHub.publish("APPOINTMENT_STATUS_UPDATED", {
+    appointmentId: id,
+    status: newStatus,
+    doctorName: session.fullName || session.username
+  });
+
+  showToast(`Patient status updated to: ${newStatus}`);
+  renderApptRequests();
+}
+
+// 2. CLINICAL RECORDS TABLE (Diagnosis, Prescription, Attachment & Status)
+function renderRecordsTable(records) {
+  const rBody = document.getElementById("recordsBody");
+  const rEmpty = document.getElementById("recordsEmpty");
+  rBody.innerHTML = "";
+
+  if (!records.length) {
+    rEmpty.style.display = "block";
+    return;
+  }
+  rEmpty.style.display = "none";
+
+  records.slice().reverse().forEach(r => {
+    const tr = document.createElement("tr");
+    
+    // Prescription display
+    const rxHtml = r.prescription ? `<div class="rx-card"><b>💊 Prescribed Meds:</b>${esc(r.prescription)}</div>` : `<span style="color:var(--muted);font-size:12px;">No prescription</span>`;
+    
+    // Attachment chip
+    const docChip = r.attachmentData ? `
+      <button class="btn btn-ghost" style="padding:4px 8px;font-size:11px;" onclick='viewAttachedDoc(${JSON.stringify(r)})'>
+        📎 ${esc(r.attachmentName || "View File")}
+      </button>` : `<span style="color:var(--muted);font-size:12px;">None</span>`;
+
+    const statusPill = r.status === "Done" ? `<span class="doc-pill pill-done">Completed ✓</span>` : `<span class="doc-pill pill-proc">Processing</span>`;
+
+    tr.innerHTML = `
+      <td><div class="name-cell"><div class="mini-avatar">${initialsOf(r.patientUsername)}</div><b>${esc(r.patientUsername)}</b></div></td>
+      <td>${fmtDate(r.date)}</td>
+      <td style="max-width:200px;">${esc(r.diagnosis || "General Consultation")}</td>
+      <td style="max-width:240px;">${rxHtml}</td>
+      <td>${docChip}</td>
+      <td>${statusPill}</td>
+      <td><span class="hash-chip"><span class="dot">✓</span>${shortHash(r.blockHash)}</span></td>
+      <td>
+        <button class="btn btn-outline" style="padding:5px 10px;font-size:11.5px;" onclick='openEditRecordModal(${JSON.stringify(r)})'>Edit / Update</button>
+      </td>
+    `;
+    rBody.appendChild(tr);
+  });
+}
+
+// File Attachment handling
+document.getElementById("mFileInput").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  attachedFileName = file.name;
+  attachedFileType = file.type;
+  document.getElementById("mFileName").textContent = `✓ ${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    attachedFileBase64 = evt.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function openNewRecordModal() {
+  editingRecordId = null;
+  document.getElementById("recordModalTitle").textContent = "Create Clinical Record & E-Prescription";
+  populatePatientSelect();
+  document.getElementById("mDiagnosis").value = "";
+  document.getElementById("mPrescription").value = "";
+  document.getElementById("mStatus").value = "Processing";
+  attachedFileBase64 = null;
+  document.getElementById("mFileName").textContent = "Click or drop file (JPG, PNG, PDF)";
+  document.getElementById("recordModal").classList.add("open");
+}
+
+function openNewRecordFor(username, name) {
+  openNewRecordModal();
+  document.getElementById("mPatientSelect").value = username;
+}
+
+function openEditRecordModal(r) {
+  editingRecordId = r.id;
+  document.getElementById("recordModalTitle").textContent = "Update Clinical Record #" + r.id;
+  populatePatientSelect();
+  document.getElementById("mPatientSelect").value = r.patientUsername;
+  document.getElementById("mDiagnosis").value = r.diagnosis || "";
+  document.getElementById("mPrescription").value = r.prescription || "";
+  document.getElementById("mStatus").value = r.status || "Processing";
+  attachedFileBase64 = r.attachmentData || null;
+  attachedFileName = r.attachmentName || null;
+  attachedFileType = r.attachmentType || null;
+  document.getElementById("mFileName").textContent = r.attachmentName ? `Existing: ${r.attachmentName}` : "Click or drop file (JPG, PNG, PDF)";
+  document.getElementById("recordModal").classList.add("open");
+}
+
+function populatePatientSelect() {
+  const sel = document.getElementById("mPatientSelect");
+  sel.innerHTML = cachedPatients.map(p => `<option value="${esc(p.username)}">${esc(p.fullName || p.username)} (${esc(p.username)})</option>`).join("");
+}
+
+async function saveClinicalRecord() {
+  const patientUsername = document.getElementById("mPatientSelect").value;
+  const patientObj = cachedPatients.find(p => p.username === patientUsername) || { fullName: patientUsername };
+  const diagnosis = document.getElementById("mDiagnosis").value.trim();
+  const prescription = document.getElementById("mPrescription").value.trim();
+  const status = document.getElementById("mStatus").value;
+
+  if (!diagnosis) {
+    showToast("Please enter clinical diagnosis or consultation notes.");
+    return;
+  }
+
+  const payload = {
+    patientUsername,
+    doctorUsername: session.username,
+    diagnosis,
+    prescription,
+    status,
+    attachmentData: attachedFileBase64,
+    attachmentName: attachedFileName,
+    attachmentType: attachedFileType
+  };
+
+  if (editingRecordId) {
+    UserStore.updateRecord(editingRecordId, payload);
+    apiRequest(`/api/doctor/records/${editingRecordId}`, { method: "PUT", body: payload }).catch(() => {});
+  } else {
+    UserStore.addRecord({ ...payload, patientName: patientObj.fullName || patientUsername });
+    apiRequest("/api/patient/records", { method: "POST", body: payload }).catch(() => {});
+  }
+
+  // 🔗 Interconnection 1: Transmit E-Prescription directly to Pharmacy Dashboard Queue
+  if (prescription) {
+    const rxToken = "RX-" + Date.now().toString().slice(-6);
+    MedChainLiveHub.addPharmacyPrescription({
+      id: "RX-" + Date.now(),
+      token: rxToken,
+      patientUsername,
+      patientName: patientObj.fullName || patientUsername,
+      doctorUsername: session.username,
+      doctorName: session.fullName || session.username,
+      prescription,
+      status: "Pending",
+      cost: 150,
+      createdAt: new Date().toISOString()
+    });
+
+    LiveHub.publish("PRESCRIPTION_CREATED", {
+      token: rxToken,
+      patientUsername,
+      patientName: patientObj.fullName || patientUsername,
+      doctorUsername: session.username,
+      doctorName: session.fullName || session.username,
+      prescription
+    });
+  }
+
+  LiveHub.publish("RECORD_UPDATED", {
+    patientUsername,
+    patientName: patientObj.fullName || patientUsername,
+    doctorUsername: session.username,
+    doctorName: session.fullName || session.username,
+    diagnosis,
+    prescription,
+    status
+  });
+
+  closeModal("recordModal");
+  showToast("Clinical Record sealed on Blockchain & pushed to Pharmacy!");
+  render();
+}
+
+function viewAttachedDoc(r) {
+  document.getElementById("docViewerTitle").textContent = r.attachmentName || "Medical Report";
+  document.getElementById("docViewerSub").textContent = `Uploaded for ${r.patientUsername} · Verified SHA-256 Signature`;
+  const container = document.getElementById("docViewerContent");
+  const dloadBtn = document.getElementById("docDownloadBtn");
+  container.innerHTML = "";
+
+  if (r.attachmentType?.includes("pdf") || r.attachmentName?.endsWith(".pdf")) {
+    container.innerHTML = `<embed src="${r.attachmentData}" type="application/pdf" width="100%" height="450px" style="border-radius:8px;">`;
+  } else {
+    container.innerHTML = `<img src="${r.attachmentData}" style="max-width:100%;max-height:450px;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,0.4);" alt="Attachment">`;
+  }
+
+  dloadBtn.href = r.attachmentData;
+  dloadBtn.download = r.attachmentName || "Medical_Report";
+  document.getElementById("docViewerModal").classList.add("open");
+}
+
+// 3. PATIENTS & DATA PRIVACY CONSENT
+function renderPatientsTable(list) {
   const pBody = document.getElementById("patientBody");
   pBody.innerHTML = "";
-  Object.entries(PATIENTS).forEach(([id, p]) => {
-    const patientRecords = records.filter(r => r.patientId === id);
-    const last = patientRecords[patientRecords.length - 1];
+
+  list.forEach(p => {
+    const consent = MedChainLiveHub.getConsent(p.username);
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td><div class="name-cell"><div class="mini-avatar">${p.initials}</div>${p.name}</div></td>
-      <td>${last ? last.diagnosis : "No records yet"}</td>
-      <td>${last ? fmtDate(last.date) : "—"}</td>
-      <td>${last ? `<span class="hash-chip"><span class="dot">✓</span>${shortHash(last.hash)}</span>` : "—"}</td>
-      <td><button class="btn btn-ghost" style="padding:6px 12px; font-size:11.5px;" onclick="openReferModal('${id}')">Refer →</button></td>`;
+      <td><div class="name-cell"><div class="mini-avatar">${initialsOf(p.fullName)}</div><b>${esc(p.fullName)}</b></div></td>
+      <td><code>${esc(p.username)}</code></td>
+      <td><b style="color:var(--coral);">O+</b></td>
+      <td>
+        <span class="status-pill ${consent ? 'normal' : 'critical'}">
+          ${consent ? 'Access Granted ✓' : '🔒 Consent Restricted'}
+        </span>
+      </td>
+      <td>
+        <button class="btn btn-ghost" style="padding:5px 10px;font-size:11.5px;" onclick="openNewRecordFor('${esc(p.username)}','${esc(p.fullName)}')">
+          ＋ Consult / Rx
+        </button>
+      </td>
+    `;
     pBody.appendChild(tr);
   });
+}
 
-  // Recent activity — last 6 records, newest first
-  const aBody = document.getElementById("activityBody");
-  aBody.innerHTML = "";
-  records.slice(-6).reverse().forEach(r => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><div class="name-cell"><div class="mini-avatar">${PATIENTS[r.patientId]?.initials || "?"}</div>${r.patientName}</div></td>
-      <td>${r.diagnosis}</td>
-      <td>${fmtDate(r.date)}</td>
-      <td><span class="hash-chip"><span class="dot">✓</span>${shortHash(r.hash)}</span></td>`;
-    aBody.appendChild(tr);
-  });
-
-  // Referrals
+// 4. HOSPITAL REFERRALS (No Map)
+function renderReferrals() {
+  const referrals = JSON.parse(localStorage.getItem("medchain_referrals_v1") || "[]");
+  document.getElementById("statReferrals").textContent = referrals.length;
   const rBody = document.getElementById("referralBody");
   const rEmpty = document.getElementById("referralEmpty");
   rBody.innerHTML = "";
+
   if (!referrals.length) {
     rEmpty.style.display = "block";
-  } else {
-    rEmpty.style.display = "none";
-    referrals.slice().reverse().forEach(r => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td><div class="name-cell"><div class="mini-avatar">${PATIENTS[r.patientId]?.initials || "?"}</div>${r.patientName}</div></td>
-        <td>${r.hospitalName}</td>
-        <td>${r.reason}</td>
-        <td><span class="status-pill review">${r.status}</span></td>
-        <td><span class="hash-chip"><span class="dot">✓</span>${shortHash(r.hash)}</span></td>`;
-      rBody.appendChild(tr);
-    });
+    return;
   }
+  rEmpty.style.display = "none";
+
+  referrals.slice().reverse().forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${esc(r.patientName)}</b></td>
+      <td><b style="color:var(--teal);">${esc(r.hospitalName)}</b></td>
+      <td>${esc(r.reason)}</td>
+      <td><span class="badge-admit">${esc(r.urgency || "Emergency Admit")}</span></td>
+      <td><span class="status-pill ${r.status === 'Accepted' ? 'normal' : 'review'}">${esc(r.status || 'Pending')}</span></td>
+      <td><code>${esc(r.hospitalId || 'H001')}</code></td>
+    `;
+    rBody.appendChild(tr);
+  });
 }
 
-function openReferModal(patientId) {
-  const p = PATIENTS[patientId];
-  document.getElementById("rPatientName").value = p.name;
-  document.getElementById("referModal").dataset.patientId = patientId;
-
+document.getElementById("quickReferBtn").onclick = () => {
+  const pSel = document.getElementById("rPatient");
+  pSel.innerHTML = cachedPatients.map(p => `<option value="${p.username}">${p.fullName}</option>`).join("");
   const hospitals = seedHospitalsIfEmpty();
-  const sel = document.getElementById("rHospital");
-  sel.innerHTML = hospitals.map(h => `<option value="${h.id}">${h.name} — ${h.specialization}</option>`).join("");
-
+  document.getElementById("rHospital").innerHTML = hospitals.map(h => `<option value="${h.id}">${h.name} (${h.specialization})</option>`).join("");
   document.getElementById("referModal").classList.add("open");
-}
+};
 
-const modal = document.getElementById("addModal");
-document.getElementById("addBtn").onclick = () => { modal.classList.add("open"); };
-document.getElementById("cancelAdd").onclick = () => { modal.classList.remove("open"); };
+function confirmReferral() {
+  const pUsername = document.getElementById("rPatient").value;
+  const patient = cachedPatients.find(p => p.username === pUsername) || { fullName: pUsername };
+  const hId = document.getElementById("rHospital").value;
+  const hospital = getHospitalById(hId) || { id: hId, name: "Specialist Hospital" };
+  const reason = document.getElementById("rReason").value.trim() || "Emergency inpatient care required";
+  const urgency = document.getElementById("rUrgency").value;
 
-const referModal = document.getElementById("referModal");
-document.getElementById("cancelRefer").onclick = () => { referModal.classList.remove("open"); };
+  const refs = JSON.parse(localStorage.getItem("medchain_referrals_v1") || "[]");
+  const refObj = {
+    id: "REF-" + Date.now(),
+    patientName: patient.fullName,
+    patientUsername: pUsername,
+    hospitalId: hospital.id,
+    hospitalName: hospital.name,
+    doctorUsername: session.username,
+    doctorName: session.fullName || session.username,
+    reason,
+    urgency,
+    status: "Pending",
+    createdAt: new Date().toISOString()
+  };
+  refs.push(refObj);
+  localStorage.setItem("medchain_referrals_v1", JSON.stringify(refs));
 
-document.getElementById("confirmRefer").onclick = async () => {
-  const patientId = referModal.dataset.patientId;
-  const p = PATIENTS[patientId];
-  const hospitalId = document.getElementById("rHospital").value;
-  const hospital = getHospitalById(hospitalId);
-  const reason = document.getElementById("rReason").value.trim() || "Specialist consultation required";
-  const date = document.getElementById("rDate").value || new Date().toISOString().slice(0, 10);
-
-  await addReferralToChain({
-    patientId, patientName: p.name, doctorName: DOCTOR_NAME,
-    hospitalId, hospitalName: hospital.name, reason, date,
+  // 🔗 Interconnection: Push Live Alert to Hospital Admin Bed Management
+  LiveHub.publish("HOSPITAL_ADMIT_REQUESTED", {
+    hospitalId: hospital.id,
+    patientName: patient.fullName,
+    patientUsername: pUsername,
+    reason,
+    urgency,
+    doctorName: session.fullName || session.username
   });
 
-  referModal.classList.remove("open");
-  document.getElementById("rReason").value = "";
-  document.getElementById("rDate").value = "";
+  closeModal("referModal");
+  showToast(`Referred ${patient.fullName} to ${hospital.name}. Hospital Admin notified!`);
+  renderReferrals();
+}
 
-  const toast = document.getElementById("toast");
-  document.getElementById("toastMsg").textContent = `${p.name} referred to ${hospital.name}`;
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2800);
+// Listen to Real-time Events from Pharmacy & Hospital
+LiveHub.subscribe("PHARMACY_STOCK_ALERT", (evt) => {
+  if (!evt.doctorUsername || evt.doctorUsername === session.username) {
+    document.getElementById("pharmacyAlertBanner").style.display = "flex";
+    document.getElementById("pharmacyAlertText").textContent = evt.message;
+    showToast("⚠️ Pharmacy Alert: Prescribed molecule out of stock!");
+  }
+});
+
+LiveHub.subscribe("RECORD_UPLOADED", (evt) => {
+  showToast(`🔔 New Medical Record uploaded by patient: ${evt.patientName || evt.patientUsername}!`);
   render();
-};
+});
 
-document.getElementById("confirmAdd").onclick = async () => {
-  const patientId = document.getElementById("fPatient").value;
-  const diagnosis = document.getElementById("fDiagnosis").value.trim() || "General consultation";
-  const date = document.getElementById("fDate").value || new Date().toISOString().slice(0, 10);
-  const p = PATIENTS[patientId];
-
-  await addRecordToChain({ patientId, patientName: p.name, doctorName: DOCTOR_NAME, diagnosis, date });
-  modal.classList.remove("open");
-  document.getElementById("fDiagnosis").value = "";
-  document.getElementById("fDate").value = "";
-
-  const toast = document.getElementById("toast");
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2600);
+LiveHub.subscribe("USER_REGISTERED", (evt) => {
+  showToast(`🔔 New Patient registered: ${evt.fullName} (${evt.username})`);
   render();
-};
+});
 
 render();
 </script>

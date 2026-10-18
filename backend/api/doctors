@@ -1,0 +1,76 @@
+cd C:\Users\OMKAR\Documents\Decentralized-Medical-Records-Management
+
+function Replace-Text($file, $old, $new) {
+  $path = (Resolve-Path $file).Path
+  $t = [System.IO.File]::ReadAllText($path, [System.Text.Encoding]::UTF8)
+  $label = $old.Substring(0, [Math]::Min(45, $old.Length))
+  if ($t.Contains($old)) {
+    $t = $t.Replace($old, $new)
+    [System.IO.File]::WriteAllText($path, $t, (New-Object System.Text.UTF8Encoding $false))
+    Write-Host "OK   : $label"
+  } else { Write-Host "MISS : $label" }
+}
+
+# ---------- Backend: doctors list endpoint ----------
+$doctorsApi = @'
+    @GetMapping("/doctors")
+    public ResponseEntity<?> doctors(@RequestHeader("Authorization") String auth) {
+        requireSession(auth);
+        List<Map<String, String>> out = userRepository.findByRole("Doctor").stream()
+                .filter(AppUser::isActive)
+                .map(d -> Map.of("username", d.getUsername(), "fullName", d.getFullName()))
+                .toList();
+        return ResponseEntity.ok(out);
+    }
+
+    // --- Doctor: view panel records, add/update a diagnosis note ---
+'@
+Replace-Text "backend\src\main\java\com\medvault\controller\RecordController.java" '    // --- Doctor: view panel records, add/update a diagnosis note ---' $doctorsApi
+
+# ---------- Doctor dashboard ----------
+Replace-Text "doctor-dashboard.html" '"Good day, Dr. " + (session.fullName || session.username)' '"Good day, " + (/^dr\.?\s/i.test(session.fullName || "") ? session.fullName : "Dr. " + (session.fullName || session.username))'
+Replace-Text "doctor-dashboard.html" 'const list = ApptStore.all().sort(' 'const list = ApptStore.all().filter(a => !a.doctorUsername || a.doctorUsername === session.username).sort('
+Replace-Text "doctor-dashboard.html" 'const cls = a.status === "Confirmed" ? "normal" : (a.status === "Booked" ? "review" : "critical");' 'const cls = (a.status === "Confirmed" || a.status === "Completed") ? "normal" : ((a.status === "Booked" || a.status === "In Treatment") ? "review" : "critical");'
+Replace-Text "doctor-dashboard.html" ': (a.status === "Confirmed" ? ' ': ((a.status === "Confirmed" || a.status === "In Treatment") ? statusBtns(a) + '
+
+$statusFns = @'
+function statusBtns(a) {
+  const b = (s, label) => `<button class="btn btn-primary" style="padding:6px 12px;font-size:11.5px;margin-right:4px;" onclick="setApptStatus('${esc(a.id)}','${s}')">${label}</button>`;
+  return a.status === "Confirmed" ? b("In Treatment", "Start Treatment") + b("Completed", "Mark Completed") : b("Completed", "Mark Completed");
+}
+function setApptStatus(id, status) {
+  ApptStore.update(id, { status, doctorUsername: session.username, statusAt: new Date().toISOString() });
+  renderApptRequests(); showToast("Status updated: " + status);
+}
+function confirmAppt(id) {
+'@
+Replace-Text "doctor-dashboard.html" 'function confirmAppt(id) {' $statusFns
+
+# ---------- Patient dashboard ----------
+Replace-Text "patient-dashboard.html" '<input id="fDoctor" placeholder="e.g. doctor1">' '<select id="fDoctor"></select>'
+Replace-Text "patient-dashboard.html" '<div class="field"><label>Reason for visit</label>' '<div class="field"><label>Doctor <span class="req">*</span></label><select id="apDoctor"></select></div> <div class="field"><label>Reason for visit</label>'
+Replace-Text "patient-dashboard.html" 'phone, email, hospitalId: hid, hospital: h ? h.name : hid, date, time: chosenSlot,' 'phone, email, hospitalId: hid, hospital: h ? h.name : hid, date, time: chosenSlot, doctorUsername: (document.getElementById("apDoctor") || {}).value || "",'
+Replace-Text "patient-dashboard.html" 'else if (a.status === "Rejected" || a.status === "Cancelled") { cls = "critical"; label = a.status; }' 'else if (a.status === "Rejected" || a.status === "Cancelled") { cls = "critical"; label = a.status; } else if (a.status === "In Treatment") { cls = "review"; label = "In Treatment"; } else if (a.status === "Completed") { cls = "normal"; label = "Treatment Completed"; }'
+
+$doctorLoader = @'
+<script src="appointment-engine.js"></script>
+<script>
+window.addEventListener("load", function () {
+  async function fillDoctors() {
+    try {
+      if (!window.DOCTORS) window.DOCTORS = await apiRequest("/api/doctors");
+      const opts = window.DOCTORS.map(d => `<option value="${esc(d.username)}">${esc(d.fullName)}</option>`).join("");
+      ["fDoctor", "apDoctor"].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = opts; });
+    } catch (e) { console.warn("Could not load doctors", e); }
+  }
+  fillDoctors();
+  const ub = document.getElementById("uploadBtn");
+  if (ub) ub.addEventListener("click", fillDoctors);
+});
+</script>
+'@
+Replace-Text "patient-dashboard.html" '<script src="appointment-engine.js"></script>' $doctorLoader
+
+# ---------- Hospital dashboard + SMS text ----------
+Replace-Text "hospital-dashboard.html" 'const pill = s => (s === "Accepted" || s === "Confirmed") ?' 'const pill = s => (s === "Accepted" || s === "Confirmed" || s === "Completed") ?'
+Replace-Text "appointment-engine.js" 'by Dr. ${doctorName}' 'by ${/^dr\.?\s/i.test(doctorName) ? doctorName : "Dr. " + doctorName}'

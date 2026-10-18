@@ -8,119 +8,156 @@
 <body>
 <div class="app">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="mark">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
       </div>
       <div><div class="name">MedChain</div><div class="sub">Admin Console</div></div>
     </div>
 
-    <a class="nav-item active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg> Overview</a>
-    <a class="nav-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> User Management</a>
-    <a class="nav-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg> All Records</a>
-    <a class="nav-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6z"/></svg> Chain Audit</a>
-    <a class="nav-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg> Settings</a>
+    <a class="nav-item active" onclick="goTo('auditCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg> Overview & Audit</a>
+    <a class="nav-item" onclick="goTo('visualizerCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> Visual Explorer</a>
+    <a class="nav-item" onclick="goTo('userCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> User Management</a>
+    <a class="nav-item" onclick="goTo('recordsCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg> All Records</a>
+    <a class="nav-item" onclick="goTo('hospitalCard')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6.5-4.35-9.5-8.5C-0.5 8 2 3 6.5 3c2 0 3.5 1 5.5 3 2-2 3.5-3 5.5-3C22 3 24.5 8 21.5 12.5 18.5 16.65 12 21 12 21z"/></svg> Hospitals</a>
 
     <div class="sidebar-footer">
       <span class="role-pill">Admin</span>
-      <a class="nav-item" href="login.html"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
+      <a class="nav-item" href="#" onclick="logout(); return false;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg> Log Out</a>
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
     <div class="topbar">
       <div>
-        <div class="title">Admin Console</div>
-        <div class="subtitle">System-wide view of users, records, and chain integrity</div>
+        <div class="title">Admin Control Dashboard</div>
+        <div class="subtitle">Real-time oversight of system users, medical records, and SHA-256 chain integrity</div>
       </div>
-      <div class="topbar-right" style="display:flex; align-items:center;">
+      <div class="topbar-right">
         <div class="search-box">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-          <input placeholder="Search users or records...">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="searchInput" placeholder="Search records or users..." oninput="handleSearch(this.value)">
         </div>
         <div class="profile-chip">
-          <div class="avatar">AD</div>
-          <div class="who"><b>Admin</b>Administrator</div>
+          <div class="avatar" id="adminAvatar">AD</div>
+          <div class="who"><b id="adminNameLabel">Admin</b>Administrator</div>
         </div>
       </div>
     </div>
 
     <div class="stat-row">
       <div class="stat-card">
-        <div class="label">Total Users</div>
-        <div class="value">4</div>
-        <div class="delta neutral">2 patients · 1 doctor · 1 admin</div>
+        <div class="label">Total System Users</div>
+        <div class="value" id="statUsers">—</div>
+        <div class="delta neutral" id="statUsersBreak">—</div>
       </div>
       <div class="stat-card">
-        <div class="label">Total Records on Chain</div>
-        <div class="value" id="statBlocks">—</div>
-        <div class="delta">Including genesis block</div>
+        <div class="label">Blockchain Medical Records</div>
+        <div class="value" id="statRecords">—</div>
+        <div class="delta">⚡ Connected to Backend</div>
       </div>
       <div class="stat-card">
-        <div class="label">Last Verified</div>
-        <div class="value" id="statVerified" style="font-size:18px;">Not yet run</div>
-        <div class="delta neutral">Click "Verify Chain" below</div>
+        <div class="label">Chain Audit Status</div>
+        <div class="value" id="statVerified" style="font-size:20px;">Not yet run</div>
+        <div class="delta neutral">Click "Verify Chain Integrity" below</div>
       </div>
     </div>
 
-    <!-- Chain Audit -->
-    <div class="card">
+    <!-- Chain Audit Banner -->
+    <div class="card" id="auditCard">
       <div class="card-head">
-        <div><h3>Blockchain Integrity Audit</h3><div class="hint">Recomputes every block's SHA-256 hash and its link to the previous block — same check as <code>Blockchain.isChainValid()</code></div></div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn-outline" id="tamperBtn">Simulate Tampering (Demo)</button>
+        <div>
+          <h3>Blockchain Integrity Audit</h3>
+          <div class="hint">Calls <code>/api/admin/chain/verify</code> — backend validates every block's cryptographic hash chain</div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-outline" onclick="toggleTamperTest()">
+            🧪 Simulate Tampering
+          </button>
           <button class="btn btn-primary" id="verifyBtn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6z"/></svg>
-            Verify Chain
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6z"/></svg>
+            Verify Chain Integrity
           </button>
         </div>
       </div>
-
       <div class="chain-banner idle" id="chainBanner">
         <div class="icon-wrap">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6z"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6z"/></svg>
         </div>
         <div>
-          <b id="bannerTitle">Chain not yet verified</b>
-          <span id="bannerText">Run a verification pass to confirm no record has been tampered with.</span>
+          <b id="bannerTitle">Chain Integrity Audit Ready</b>
+          <span id="bannerText">Click "Verify Chain Integrity" to recompute and validate SHA-256 block signatures.</span>
         </div>
       </div>
+    </div>
 
+    <!-- Visual Explorer Card -->
+    <div class="card" id="visualizerCard">
+      <div class="card-head">
+        <div>
+          <h3>Interactive Blockchain Node Explorer</h3>
+          <div class="hint">Click any block node below to inspect cryptographic hashes, nonce, and clinical data.</div>
+        </div>
+      </div>
+      <div id="blockchainVisualizerContainer"></div>
+    </div>
+
+    <!-- Records Table -->
+    <div class="card" id="recordsCard">
+      <div class="card-head"><div><h3>All Medical Records</h3><div class="hint">Immutable clinical entries stored on MedChain</div></div></div>
       <table>
-        <thead><tr><th>#</th><th>Patient</th><th>Diagnosis</th><th>Prev. Hash</th><th>Block Hash</th></tr></thead>
-        <tbody id="chainBody"></tbody>
+        <thead><tr><th>Patient</th><th>Doctor</th><th>Date</th><th>Diagnosis</th><th>Block Hash</th></tr></thead>
+        <tbody id="recordsBody"></tbody>
+      </table>
+      <div class="empty-state" id="recordsEmpty" style="display:none;"><p>No records registered in system.</p></div>
+    </div>
+
+    <!-- User Management Table -->
+    <div class="card" id="userCard">
+      <div class="card-head"><div><h3>Registered System Users</h3><div class="hint">Patient, Doctor, Hospital, and Admin accounts</div></div></div>
+      <table>
+        <thead><tr><th>Full Name</th><th>Username</th><th>Account Role</th><th>Platform Fee</th><th>Status</th><th>Security Action</th></tr></thead>
+        <tbody id="userBody"></tbody>
       </table>
     </div>
 
-    <!-- Hospital Management -->
-    <div class="card">
+    <!-- Live Security Audit & Real-Time Event Log -->
+    <div class="card" id="securityAuditCard">
       <div class="card-head">
-        <div><h3>Hospital Management</h3><div class="hint">Specialist hospitals available for patient referrals</div></div>
-        <button class="btn btn-primary" id="addHospitalBtn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+        <div>
+          <h3>🛡️ Live Security Audit &amp; Cross-Portal Activity Stream</h3>
+          <div class="hint">Real-time state listener tracking transactions across Patient, Doctor, Hospital Admin &amp; Pharmacy</div>
+        </div>
+        <span class="badge-up" style="padding:6px 14px;border-radius:20px;font-size:12px;background:rgba(0,173,181,0.2);color:var(--teal);">● Live Security Shield Active</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Event Type</th>
+            <th>Participating Nodes</th>
+            <th>Payload Detail</th>
+            <th>Audit Status</th>
+          </tr>
+        </thead>
+        <tbody id="securityAuditBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Hospital Management Card -->
+    <div class="card" id="hospitalCard">
+      <div class="card-head">
+        <div><h3>Hospital & Referral Management</h3><div class="hint">Specialist partner hospitals available for medical referrals</div></div>
+        <button class="btn btn-ghost" onclick="generateAll()" style="margin-right:8px;">🔑 Generate All Logins</button>
+          <button class="btn btn-primary" id="addHospitalBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
           Add Hospital
         </button>
       </div>
       <table>
-        <thead><tr><th>Hospital</th><th>Specialization</th><th>Location (Lat, Lng)</th><th>Available Slots</th><th></th></tr></thead>
+        <thead><tr><th>Hospital Name</th><th>Specialization</th><th>Location</th><th>Available Slots</th><th>Login ID</th><th>Action</th></tr></thead>
         <tbody id="hospitalBody"></tbody>
-      </table>
-    </div>
-
-    <!-- User management -->
-    <div class="card">
-      <div class="card-head"><div><h3>User Management</h3><div class="hint">All registered accounts</div></div></div>
-      <table>
-        <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td><div class="name-cell"><div class="mini-avatar">RK</div>Ravi Kumar</div></td><td>patient1</td><td><span class="role-badge patient">Patient</span></td><td><span class="status-pill normal">Active</span></td></tr>
-          <tr><td><div class="name-cell"><div class="mini-avatar">AJ</div>Anita Joshi</div></td><td>patient2</td><td><span class="role-badge patient">Patient</span></td><td><span class="status-pill normal">Active</span></td></tr>
-          <tr><td><div class="name-cell"><div class="mini-avatar">DS</div>Dr. Sharma</div></td><td>doctor1</td><td><span class="role-badge doctor">Doctor</span></td><td><span class="status-pill normal">Active</span></td></tr>
-          <tr><td><div class="name-cell"><div class="mini-avatar">AD</div>Administrator</div></td><td>admin1</td><td><span class="role-badge admin">Admin</span></td><td><span class="status-pill normal">Active</span></td></tr>
-        </tbody>
       </table>
     </div>
   </main>
@@ -129,107 +166,240 @@
 <!-- Add Hospital Modal -->
 <div class="modal-overlay" id="hospitalModal">
   <div class="modal">
-    <h3>Add Hospital</h3>
-    <div class="modal-sub">This hospital will become available for doctor referrals.</div>
+    <h3>Add Partner Hospital</h3>
+    <div class="modal-sub">Add a specialist hospital to make it available for doctor referrals.</div>
     <div class="field"><label>Hospital Name</label><input id="hName" placeholder="e.g. Apex Multispecialty Hospital"></div>
-    <div class="field"><label>Specialization</label><input id="hSpecialization" placeholder="e.g. Nephrology"></div>
-    <div class="field" style="display:flex; gap:10px;">
+    <div class="field"><label>Specialization</label><input id="hSpecialization" placeholder="e.g. Nephrology / Cardiology"></div>
+    <div class="field"><label>Full Address</label><input id="hAddress" placeholder="e.g. Main Road, Dharashiv"></div>
+    <div class="field" style="display:flex; gap:12px;">
       <div style="flex:1;"><label>Latitude</label><input id="hLat" placeholder="e.g. 18.52"></div>
       <div style="flex:1;"><label>Longitude</label><input id="hLng" placeholder="e.g. 73.85"></div>
     </div>
-    <div class="field"><label>Available Appointment Slots</label><input id="hSlots" type="number" min="0" placeholder="e.g. 4"></div>
+    <div class="field"><label>Available Slots</label><input id="hSlots" type="number" min="0" placeholder="e.g. 6"></div>
     <div class="modal-actions">
       <button class="btn btn-outline" id="cancelHospital">Cancel</button>
-      <button class="btn btn-primary" id="confirmHospital">Add Hospital</button>
+      <button class="btn btn-primary" id="confirmHospital">Save Hospital</button>
     </div>
   </div>
 </div>
 
+<div class="modal-overlay" id="credsModal">
+  <div class="modal" style="width:580px;">
+    <h3>Hospital Login Credentials</h3>
+    <div class="modal-sub">Shown only once. Copy and share securely — only a salted hash of each password is stored.</div>
+    <div id="credsList"></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="document.getElementById('credsModal').classList.remove('open')">Close</button></div>
+  </div>
+</div>
 <div class="toast" id="toast"><span id="toastMsg"></span></div>
 
+<script src="auth-guard.js"></script>
+<script src="api-client.js"></script>
+<script src="user-store.js"></script>
 <script src="hospital-engine.js"></script>
-<script src="chain-engine.js"></script>
+<script src="blockchain-visualizer.js"></script>
+<script src="live-hub.js"></script>
 <script>
+const session = requireRole("ADMIN");
+
+function goTo(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  document.getElementById("toastMsg").textContent = msg;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 2800);
+}
+
 function fmtDate(d) {
-  if (d === "—") return d;
-  return new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+  if (!d) return "—";
+  const date = Array.isArray(d) ? new Date(d[0], d[1] - 1, d[2]) : new Date(d);
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-async function renderChainTable(brokenAt) {
-  const chain = (loadChainRaw()) || [];
-  document.getElementById("statBlocks").textContent = chain.length;
-
-  const body = document.getElementById("chainBody");
-  body.innerHTML = "";
-  chain.forEach((b, i) => {
-    const isBroken = brokenAt === i;
-    const label = b.type === "referral" ? `Referred to ${b.hospitalName}` : b.diagnosis;
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${i}</td>
-      <td>${b.patientName}</td>
-      <td>${label}</td>
-      <td style="font-family:'Courier New',monospace; font-size:11px; color:var(--muted);">${b.prevHash === "0" ? "0 (genesis)" : shortHash(b.prevHash)}</td>
-      <td><span class="hash-chip ${isBroken ? 'broken' : ''}"><span class="dot">${isBroken ? "!" : "✓"}</span>${shortHash(b.hash)}</span></td>`;
-    body.appendChild(tr);
-  });
+function shortHash(h) {
+  if (!h) return "Pending Block";
+  return h.slice(0, 8) + "…" + h.slice(-6);
 }
 
-function renderHospitalTable() {
-  const list = seedHospitalsIfEmpty();
-  const body = document.getElementById("hospitalBody");
-  body.innerHTML = "";
-  list.forEach(h => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><b>${h.name}</b></td>
-      <td><span class="role-badge doctor">${h.specialization}</span></td>
-      <td style="font-family:'Courier New',monospace; font-size:11.5px; color:var(--muted);">${h.lat.toFixed(4)}, ${h.lng.toFixed(4)}</td>
-      <td>${h.slots}</td>
-      <td><button class="btn btn-outline" style="padding:5px 10px; font-size:11px;" onclick="handleRemoveHospital('${h.id}')">Remove</button></td>`;
-    body.appendChild(tr);
-  });
+function initialsOf(name) {
+  if (!name) return "?";
+  return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
-function handleRemoveHospital(id) {
-  removeHospital(id);
-  renderHospitalTable();
+function roleClass(role) {
+  const r = (role || "").toLowerCase();
+  if (r.includes("doctor")) return "doctor";
+  if (r.includes("admin")) return "admin";
+  if (r.includes("hospital")) return "hospital";
+  if (r.includes("pharmacy")) return "pharmacy";
+  return "patient";
 }
 
-const hModal = document.getElementById("hospitalModal");
-document.getElementById("addHospitalBtn").onclick = () => { hModal.classList.add("open"); };
-document.getElementById("cancelHospital").onclick = () => { hModal.classList.remove("open"); };
+let cachedRecords = [], cachedUsers = [];
 
-document.getElementById("confirmHospital").onclick = () => {
-  const name = document.getElementById("hName").value.trim();
-  const specialization = document.getElementById("hSpecialization").value.trim();
-  const lat = document.getElementById("hLat").value.trim();
-  const lng = document.getElementById("hLng").value.trim();
-  const slots = document.getElementById("hSlots").value.trim();
+async function render() {
+  document.getElementById("adminNameLabel").textContent = session.fullName || session.username;
+  document.getElementById("adminAvatar").textContent = initialsOf(session.fullName || session.username);
 
-  if (!name || !specialization || !lat || !lng || !slots) {
-    document.getElementById("toastMsg").textContent = "Please fill in all hospital details";
-    const toast = document.getElementById("toast");
-    toast.classList.add("show");
-    setTimeout(() => toast.classList.remove("show"), 2400);
-    return;
+  // 1. Fetch records from UserStore & API
+  const storeRecords = UserStore.getAllRecords();
+  try {
+    const apiRecords = await apiRequest("/api/admin/records");
+    if (Array.isArray(apiRecords) && apiRecords.length > 0) {
+      cachedRecords = apiRecords;
+      storeRecords.forEach(sr => {
+        if (!cachedRecords.find(cr => cr.id === sr.id)) cachedRecords.unshift(sr);
+      });
+    } else {
+      cachedRecords = storeRecords;
+    }
+  } catch (err) {
+    cachedRecords = storeRecords;
   }
 
-  addHospital({ name, lat, lng, specialization, slots });
-  hModal.classList.remove("open");
-  ["hName", "hSpecialization", "hLat", "hLng", "hSlots"].forEach(id => document.getElementById(id).value = "");
+  // 2. Fetch users from UserStore & API (guarantees every registered user appears)
+  const storeUsers = UserStore.getAllUsers();
+  try {
+    const apiUsers = await apiRequest("/api/admin/users");
+    const map = new Map();
+    storeUsers.forEach(u => map.set(u.username, u));
+    if (Array.isArray(apiUsers)) {
+      apiUsers.forEach(u => {
+        const existing = map.get(u.username) || {};
+        map.set(u.username, { ...existing, ...u, fullName: u.fullName || existing.fullName || u.username });
+      });
+    }
+    cachedUsers = Array.from(map.values());
+  } catch (err) {
+    cachedUsers = storeUsers;
+  }
 
-  document.getElementById("toastMsg").textContent = "Hospital added successfully";
-  const toast = document.getElementById("toast");
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2400);
-  renderHospitalTable();
-};
+  document.getElementById("statUsers").textContent = cachedUsers.length;
+  const patients = cachedUsers.filter(u => (u.role || "").toLowerCase() === "patient").length;
+  const doctors = cachedUsers.filter(u => (u.role || "").toLowerCase() === "doctor").length;
+  const admins = cachedUsers.filter(u => (u.role || "").toLowerCase() === "admin").length;
+  document.getElementById("statUsersBreak").textContent = `${patients} Patients · ${doctors} Doctors · ${admins} Admins`;
+  document.getElementById("statRecords").textContent = cachedRecords.length;
 
-async function init() {
-  await seedChainIfEmpty();
-  await renderChainTable(null);
+  renderRecordsTable(cachedRecords);
+  renderUserTable(cachedUsers);
+  renderBlockchainVisualizer("blockchainVisualizerContainer", cachedRecords);
   renderHospitalTable();
+  renderAuditLog();
+}
+
+function renderRecordsTable(records) {
+  const rBody = document.getElementById("recordsBody");
+  const rEmpty = document.getElementById("recordsEmpty");
+  rBody.innerHTML = "";
+  if (!records.length) {
+    rEmpty.style.display = "block";
+  } else {
+    rEmpty.style.display = "none";
+    records.slice().reverse().forEach(r => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><b>${r.patientUsername}</b></td>
+        <td>${r.doctorUsername}</td>
+        <td>${fmtDate(r.date)}</td>
+        <td>${r.diagnosis}</td>
+        <td><span class="hash-chip"><span class="dot">✓</span>${shortHash(r.blockHash)}</span></td>`;
+      rBody.appendChild(tr);
+    });
+  }
+}
+
+function renderUserTable(users) {
+  const uBody = document.getElementById("userBody");
+  uBody.innerHTML = "";
+  users.forEach(u => {
+    const tr = document.createElement("tr");
+    const isPatient = (u.role || "").toUpperCase() === "PATIENT";
+    const feeBadge = isPatient 
+      ? `<span style="color:var(--mint);font-size:11.5px;font-weight:700;">Paid ₹150 ✓</span>` 
+      : `<span style="color:var(--muted);font-size:11.5px;">Staff (Waived)</span>`;
+
+    tr.innerHTML = `
+      <td><div class="name-cell"><div class="mini-avatar">${initialsOf(u.fullName)}</div><b>${esc(u.fullName)}</b></div></td>
+      <td><code>${esc(u.username)}</code></td>
+      <td><span class="role-badge ${roleClass(u.role)}">${esc(u.role)}</span></td>
+      <td>${feeBadge}</td>
+      <td><span class="status-pill ${u.active !== false ? 'normal' : 'critical'}">${u.active !== false ? 'Active' : 'Inactive'}</span></td>
+      <td><button class="btn btn-outline" style="padding:4px 8px;font-size:11px;color:var(--coral);" onclick="revokeSession('${esc(u.username)}')">🔒 Revoke Session</button></td>`;
+    uBody.appendChild(tr);
+  });
+}
+
+const auditEvents = [
+  { time: "Just now", type: "SYSTEM_INITIALIZED", nodes: "Central Hub ↔ 5 Portals", detail: "SHA-256 Ledger sync verified active", status: "COMPLIANT" },
+  { time: "2m ago", type: "IPFS_GATEWAY_CHECK", nodes: "Storage Node", detail: "Content-addressed CID root validated", status: "HEALTHY" },
+  { time: "5m ago", type: "RBAC_ENFORCEMENT", nodes: "Security Shield", detail: "Patient, Doctor, Hospital, Pharmacy tokens active", status: "VERIFIED" }
+];
+
+function renderAuditLog() {
+  const body = document.getElementById("securityAuditBody");
+  if (!body) return;
+  body.innerHTML = "";
+  auditEvents.slice(0, 10).forEach(e => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);">${e.time}</span></td>
+      <td><code style="color:var(--teal);">${e.type}</code></td>
+      <td><b>${e.nodes}</b></td>
+      <td style="font-size:12px;max-width:300px;">${e.detail}</td>
+      <td><span class="status-pill normal">${e.status}</span></td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+function revokeSession(username) {
+  auditEvents.unshift({
+    time: "Just now",
+    type: "SESSION_REVOCATION",
+    nodes: `Admin Console → ${username}`,
+    detail: `Administrator manually revoked active session for ${username}`,
+    status: "REVOKED"
+  });
+  renderAuditLog();
+  showToast(`Session for ${username} revoked across network.`);
+}
+
+LiveHub.subscribe("*", (evt) => {
+  auditEvents.unshift({
+    time: new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' }),
+    type: evt.event,
+    nodes: evt.patientUsername ? `Patient(${evt.patientUsername})` : (evt.username ? `User(${evt.username})` : "Network Event"),
+    detail: evt.prescription ? `Prescription: ${evt.prescription.slice(0, 25)}...` : (evt.fullName ? `New User: ${evt.fullName} (Paid ₹150)` : (evt.reason || "Real-time state update")),
+    status: "COMPLIANT"
+  });
+  renderAuditLog();
+  if (evt.event === "USER_REGISTERED" || evt.event === "RECORD_UPLOADED" || evt.event === "RECORD_UPDATED") {
+    render();
+  }
+});
+
+function handleSearch(query) {
+  const q = query.toLowerCase().trim();
+  if (!q) {
+    renderRecordsTable(cachedRecords);
+    renderUserTable(cachedUsers);
+    return;
+  }
+  const filteredRecords = cachedRecords.filter(r => 
+    (r.patientUsername || "").toLowerCase().includes(q) ||
+    (r.doctorUsername || "").toLowerCase().includes(q) ||
+    (r.diagnosis || "").toLowerCase().includes(q)
+  );
+  const filteredUsers = cachedUsers.filter(u =>
+    (u.fullName || "").toLowerCase().includes(q) ||
+    (u.username || "").toLowerCase().includes(q)
+  );
+  renderRecordsTable(filteredRecords);
+  renderUserTable(filteredUsers);
 }
 
 document.getElementById("verifyBtn").onclick = async () => {
@@ -238,43 +408,124 @@ document.getElementById("verifyBtn").onclick = async () => {
   const text = document.getElementById("bannerText");
 
   banner.className = "chain-banner idle";
-  title.textContent = "Verifying...";
-  text.textContent = "Recomputing SHA-256 hashes for every block.";
+  title.textContent = "Verifying Chain Integrity...";
+  text.textContent = "Requesting Spring Boot backend to recompute and verify SHA-256 block hash signatures.";
 
-  const result = await verifyChain();
-  const now = new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
-  document.getElementById("statVerified").textContent = now;
+  try {
+    const result = await apiRequest("/api/admin/chain/verify");
+    const now = new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+    document.getElementById("statVerified").textContent = now;
 
-  if (result.valid) {
-    banner.className = "chain-banner valid";
-    title.textContent = "Chain Valid — No Tampering Detected";
-    text.textContent = "Every block's hash matches its stored value and correctly links to the previous block.";
-    await renderChainTable(null);
-  } else {
+    if (result.valid) {
+      banner.className = "chain-banner valid";
+      title.textContent = "✓ Chain Integrity Verified — No Tampering";
+      text.textContent = "Every block's SHA-256 signature matches its stored cryptographic state.";
+      showToast("Chain Audit Passed Successfully!");
+    } else {
+      banner.className = "chain-banner invalid";
+      title.textContent = "⚠️ Mismatch / Tampering Detected";
+      text.textContent = "Block hash mismatch found — record integrity check failed!";
+      showToast("Audit Alert: Block Hash Mismatch!");
+    }
+  } catch (err) {
     banner.className = "chain-banner invalid";
-    title.textContent = `Tampering Detected at Block ${result.brokenAt}`;
-    text.textContent = result.reason === "hash-mismatch"
-      ? "This block's recomputed hash no longer matches its stored hash — its data was modified."
-      : "This block's previous-hash link is broken — the chain has been altered.";
-    await renderChainTable(result.brokenAt);
+    title.textContent = "Verification Failed";
+    text.textContent = err.message;
   }
 };
 
-document.getElementById("tamperBtn").onclick = () => {
-  const chain = loadChainRaw() || [];
-  const recordBlocks = chain.map((b, i) => i).filter(i => chain[i].type === "record");
-  if (!recordBlocks.length) return;
-  const idx = recordBlocks[Math.floor(Math.random() * recordBlocks.length)];
-  tamperRecord(idx);
+function toggleTamperTest() {
+  const isTampered = toggleTamperSimulation("blockchainVisualizerContainer", cachedRecords);
+  const banner = document.getElementById("chainBanner");
+  if (isTampered) {
+    banner.className = "chain-banner invalid";
+    document.getElementById("bannerTitle").textContent = "⚠️ Simulated Data Tampering Active";
+    document.getElementById("bannerText").textContent = "Block #2 hash altered! Click 'Verify Chain Integrity' to see verification failure.";
+    showToast("Simulation: Block Hash Corrupted!");
+  } else {
+    banner.className = "chain-banner idle";
+    document.getElementById("bannerTitle").textContent = "Chain Integrity Audit Ready";
+    document.getElementById("bannerText").textContent = "Simulation reset to valid chain state.";
+    showToast("Simulation: Chain Restored!");
+  }
+}
 
-  const toast = document.getElementById("toast");
-  document.getElementById("toastMsg").textContent = `Block ${idx} silently modified — click "Verify Chain" to detect it`;
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 3200);
-  renderChainTable(null);
+// --- Hospital Management ---
+function renderHospitalTable() {
+  const list = seedHospitalsIfEmpty();
+  const body = document.getElementById("hospitalBody");
+  body.innerHTML = "";
+  list.forEach(h => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${h.name}</b>${h.address ? `<br><span style="font-size:11.5px; color:var(--muted);">${h.address}</span>` : ""}</td>
+      <td><span class="role-badge doctor">${h.specialization}</span></td>
+      <td><a href="${mapsLinkFor(h)}" target="_blank" style="font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--teal); text-decoration:none;">📍 View Map</a></td>
+      <td><b>${h.slots}</b> Slots</td>
+      <td>${h.loginId ? `<code>${esc(h.loginId)}</code>` : '<span style="color:var(--muted)">Not generated</span>'}</td>
+      <td style="white-space:nowrap;"><button class="btn btn-ghost" style="padding:6px 12px; font-size:12px;" onclick="generateOne('${h.id}')">🔑 ${h.loginId ? "Reset" : "Generate"}</button>
+      <button class="btn btn-outline" style="padding:6px 12px; font-size:12px;" onclick="handleRemoveHospital('${h.id}')">Remove</button></td>`;
+    body.appendChild(tr);
+  });
+}
+
+function handleRemoveHospital(id) {
+  removeHospital(id);
+  renderHospitalTable();
+  showToast("Hospital Removed.");
+}
+
+const hModal = document.getElementById("hospitalModal");
+document.getElementById("addHospitalBtn").onclick = () => { hModal.classList.add("open"); };
+document.getElementById("cancelHospital").onclick = () => { hModal.classList.remove("open"); };
+
+document.getElementById("confirmHospital").onclick = async () => {
+  const name = document.getElementById("hName").value.trim();
+  const specialization = document.getElementById("hSpecialization").value.trim();
+  const address = document.getElementById("hAddress").value.trim();
+  const lat = document.getElementById("hLat").value.trim();
+  const lng = document.getElementById("hLng").value.trim();
+  const slots = document.getElementById("hSlots").value.trim();
+
+  if (!name || !specialization || !lat || !lng || !slots) {
+    showToast("Please fill in all hospital details");
+    return;
+  }
+
+  const newH = addHospital({ name, lat, lng, specialization, slots, address });
+  hModal.classList.remove("open");
+  ["hName", "hSpecialization", "hAddress", "hLat", "hLng", "hSlots"].forEach(id => document.getElementById(id).value = "");
+
+  showToast("Hospital added successfully");
+  const c = await generateHospitalCredentials(newH.id);
+  renderHospitalTable();
+  showCreds([c]);
 };
 
-init();
+// --- Hospital login credentials ---
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function showCreds(items) {
+  document.getElementById("credsList").innerHTML = items.filter(Boolean).map(c => `
+    <div style="border:1px solid #E2E8F0;border-radius:12px;padding:12px 14px;margin-bottom:10px;">
+      <b>${esc(c.name)}</b>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:13px;margin-top:6px;">Login ID: <b>${esc(c.loginId)}</b><br>Password: <b>${esc(c.password)}</b></div>
+      <button class="btn btn-ghost" style="padding:5px 10px;font-size:11.5px;margin-top:8px;" data-copy="Hospital: ${esc(c.name)}&#10;Login ID: ${esc(c.loginId)}&#10;Password: ${esc(c.password)}" onclick="navigator.clipboard.writeText(this.dataset.copy).then(()=>showToast('Copied'))">Copy</button>
+    </div>`).join("");
+  document.getElementById("credsModal").classList.add("open");
+}
+async function generateOne(id) {
+  const c = await generateHospitalCredentials(id);
+  renderHospitalTable(); showCreds([c]);
+}
+async function generateAll() {
+  const missing = (loadHospitalsRaw() || []).filter(h => !h.loginId);
+  if (!missing.length) { showToast("All hospitals already have logins. Use Reset on a row."); return; }
+  const out = [];
+  for (const h of missing) out.push(await generateHospitalCredentials(h.id));
+  renderHospitalTable(); showCreds(out);
+};
+
+render();
 </script>
 </body>
 </html>

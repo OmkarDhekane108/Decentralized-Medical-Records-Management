@@ -1,36 +1,35 @@
 package com.medvault.entity;
-
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "app_users")
 public class AppUser {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column(unique = true, nullable = false)
     private String username;
-
     @Column(nullable = false)
     private String passwordHash;
-
     @Column(nullable = false)
     private String role;
-
     @Column(nullable = false)
     private String fullName;
-
     private boolean active = true;
-
     private Integer age;
     private Double weight;
     private String mobile;
     private String email;
+    private String profilePicturePath;
+    private String specialization;
+
+    // Health profile fields
+    private String bloodGroup;
+    private String allergies;
+    private String chronicConditions;
+    private String emergencyContact;
 
     public AppUser() {}
-
     public AppUser(String username, String passwordHash, String role, String fullName) {
         this.username = username;
         this.passwordHash = passwordHash;
@@ -57,10 +56,17 @@ public class AppUser {
     public void setMobile(String mobile) { this.mobile = mobile; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
-
- private String profilePicturePath;
     public String getProfilePicturePath() { return profilePicturePath; }
     public void setProfilePicturePath(String profilePicturePath) { this.profilePicturePath = profilePicturePath; }
-}
+    public String getSpecialization() { return specialization; }
+    public void setSpecialization(String specialization) { this.specialization = specialization; }
 
-   
+    public String getBloodGroup() { return bloodGroup; }
+    public void setBloodGroup(String bloodGroup) { this.bloodGroup = bloodGroup; }
+    public String getAllergies() { return allergies; }
+    public void setAllergies(String allergies) { this.allergies = allergies; }
+    public String getChronicConditions() { return chronicConditions; }
+    public void setChronicConditions(String chronicConditions) { this.chronicConditions = chronicConditions; }
+    public String getEmergencyContact() { return emergencyContact; }
+    public void setEmergencyContact(String emergencyContact) { this.emergencyContact = emergencyContact; }
+}
