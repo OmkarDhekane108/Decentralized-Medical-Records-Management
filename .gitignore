@@ -32,3 +32,8 @@ target/
 
 uploads/
 backend/target/
+node_modules/
+.firebase/
+.env
+.env.*
+!.env.example
